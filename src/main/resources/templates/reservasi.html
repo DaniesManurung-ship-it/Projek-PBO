@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{base :: head(title='Reservasi Meja')}"></head>
+<body>
+    <div th:replace="~{base :: toast}"></div>
+    <div th:replace="~{base :: navbar}"></div>
+    
+    <div class="d-flex" style="margin-top: 70px;">
+        <div th:replace="~{base :: sidebar}"></div>
+        
+        <div class="content-area flex-grow-1 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-wood"><i class="fas fa-calendar-alt me-2"></i>Reservasi Meja</h2>
+                <button class="btn btn-sage" data-bs-toggle="modal" data-bs-target="#reservasiModal" onclick="resetForm()">
+                    <i class="fas fa-plus me-1"></i>Buat Reservasi
+                </button>
+            </div>
+            
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+                <i class="fas fa-check-circle me-2"></i> <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                <i class="fas fa-exclamation-circle me-2"></i> <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-bordered bg-white">
+                    <thead>
+                        <tr class="bg-sage text-white">
+                            <th>ID</th>
+                            <th>Tanggal</th>
+                            <th>Jam</th>
+                            <th>Jumlah</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="reservasi : ${reservasis}">
+                            <td th:text="${reservasi.id}"></td>
+                            <td th:text="${#temporals.format(reservasi.date, 'dd/MM/yyyy')}"></td>
+                            <td th:text="${reservasi.time}"></td>
+                            <td th:text="${reservasi.people} + ' orang'"></td>
+                            <td>
+                                <span class="badge bg-warning" th:if="${reservasi.status == 'pending'}">⏳ Pending</span>
+                                <span class="badge bg-success" th:if="${reservasi.status == 'confirmed'}">✅ Dikonfirmasi</span>
+                                <span class="badge bg-info" th:if="${reservasi.status == 'completed'}">🎉 Selesai</span>
+                                <span class="badge bg-danger" th:if="${reservasi.status == 'cancelled'}">❌ Dibatalkan</span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-warning me-1" th:onclick="'editReservasi(' + ${reservasi.id} + ')'" th:disabled="${reservasi.status != 'pending'}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" th:onclick="'deleteReservasi(' + ${reservasi.id} + ')'" th:disabled="${reservasi.status != 'pending'}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(reservasis)}">
+                            <td colspan="6" class="text-center py-4">
+                                <i class="fas fa-calendar-alt fa-3x text-muted mb-2"></i>
+                                <p class="text-muted">Belum ada reservasi</p>
+                                <button class="btn btn-sage btn-sm" data-bs-toggle="modal" data-bs-target="#reservasiModal" onclick="resetForm()">
+                                    <i class="fas fa-plus me-1"></i>Buat Reservasi Pertama
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Modal Reservasi -->
+            <div class="modal fade" id="reservasiModal" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content rounded-4">
+                        <div class="modal-header bg-sage text-white border-0">
+                            <h5 class="modal-title" id="modalTitle">Buat Reservasi</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <form id="reservasiForm" method="post">
+                                <input type="hidden" name="id" id="reservasiId">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Nama <span class="text-danger">*</span></label>
+                                        <input type="text" name="name" id="reservasiName" class="form-control" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Email <span class="text-danger">*</span></label>
+                                        <input type="email" name="email" id="reservasiEmail" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Telepon <span class="text-danger">*</span></label>
+                                        <input type="text" name="phone" id="reservasiPhone" class="form-control" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Tanggal <span class="text-danger">*</span></label>
+                                        <input type="date" name="date" id="reservasiDate" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Jam <span class="text-danger">*</span></label>
+                                        <input type="time" name="time" id="reservasiTime" class="form-control" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Jumlah Orang <span class="text-danger">*</span></label>
+                                        <input type="number" name="people" id="reservasiPeople" class="form-control" min="1" max="20" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Catatan</label>
+                                    <textarea name="notes" id="reservasiNotes" class="form-control" rows="2"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-sage w-100 rounded-pill py-2">Simpan Reservasi</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div th:replace="~{base :: scripts}"></div>
+    
+    <script>
+        function resetForm() {
+            document.getElementById('reservasiForm').reset();
+            document.getElementById('reservasiId').value = '';
+            document.getElementById('modalTitle').innerText = 'Buat Reservasi';
+            document.getElementById('reservasiForm').action = '/reservasi/add';
+        }
+        
+        function editReservasi(id) {
+            fetch('/reservasi/' + id)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('reservasiId').value = data.id;
+                    document.getElementById('reservasiName').value = data.name;
+                    document.getElementById('reservasiEmail').value = data.email;
+                    document.getElementById('reservasiPhone').value = data.phone;
+                    document.getElementById('reservasiDate').value = data.date;
+                    document.getElementById('reservasiTime').value = data.time;
+                    document.getElementById('reservasiPeople').value = data.people;
+                    document.getElementById('reservasiNotes').value = data.notes || '';
+                    document.getElementById('modalTitle').innerText = 'Edit Reservasi';
+                    document.getElementById('reservasiForm').action = '/reservasi/update/' + id;
+                    new bootstrap.Modal(document.getElementById('reservasiModal')).show();
+                });
+        }
+        
+        function deleteReservasi(id) {
+            if(confirm('Batalkan reservasi ini?')) {
+                const form = document.createElement('form');
+                form.method = 'post';
+                form.action = '/reservasi/delete/' + id;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+    </script>
+</body>
+</html>

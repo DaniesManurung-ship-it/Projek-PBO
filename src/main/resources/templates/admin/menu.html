@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{base :: head(title='Kelola Menu - Admin')}"></head>
+<body>
+    <div th:replace="~{base :: toast}"></div>
+    <div th:replace="~{base :: navbar}"></div>
+    
+    <div class="d-flex" style="margin-top: 70px;">
+        <div th:replace="~{base :: adminSidebar}"></div>
+
+            <!-- Main Content -->
+        <div class="content-area flex-grow-1 p-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header" style="background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%); color: white;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-utensils me-2"></i>Kelola Menu</h5>
+                            <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addMenuModal" onclick="resetAddForm()">
+                                <i class="fas fa-plus me-1"></i>Tambah Menu
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Alert Messages -->
+                        <div th:if="${param.success != null}" class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>Menu berhasil ditambahkan!
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        <div th:if="${param.updated != null}" class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>Menu berhasil diupdate!
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        <div th:if="${param.deleted != null}" class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>Menu berhasil dihapus!
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        <div th:if="${param.error != null}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>Gagal memproses menu!
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Gambar</th>
+                                        <th>Nama</th>
+                                        <th>Kategori</th>
+                                        <th>Harga</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="menu : ${menus}">
+                                        <td th:text="${menu.id}"></td>
+                                        <td>
+                                            <img th:src="${menu.image != null ? menu.image : '/uploads/default.jpg'}" alt="Menu" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" onerror="this.src='/uploads/default.jpg'">
+                                        </td>
+                                        <td>
+                                            <strong th:text="${menu.name}"></strong>
+                                            <br><small class="text-muted" th:text="${menu.description}"></small>
+                                        </td>
+                                        <td th:text="${menu.category}"></td>
+                                        <td class="text-success fw-bold">Rp <span th:text="${#numbers.formatInteger(menu.price, 0, 'COMMA')}"></span></td>
+                                        <td>
+                                            <span class="badge bg-success" th:if="${menu.available}">Tersedia</span>
+                                            <span class="badge bg-danger" th:unless="${menu.available}">Tidak Tersedia</span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-warning me-1" th:onclick="'editMenu(' + ${menu.id} + ')'">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" th:onclick="'deleteMenu(' + ${menu.id} + ')'">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(menus)}">
+                                        <td colspan="7" class="text-center py-4">
+                                            <i class="fas fa-inbox fa-2x mb-2 opacity-50"></i>
+                                            <p class="text-muted">Belum ada menu</p>
+                                            <button class="btn btn-sage btn-sm" data-bs-toggle="modal" data-bs-target="#addMenuModal" onclick="resetAddForm()">
+                                                <i class="fas fa-plus me-1"></i>Tambah Menu Pertama
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Menu Modal -->
+    <div class="modal fade" id="addMenuModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%); color: white;">
+                    <h5 class="modal-title">Tambah Menu Baru</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{/admin/menu/add}" method="post" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nama Menu <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Deskripsi</label>
+                            <textarea class="form-control" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Harga <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" name="price" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Kategori <span class="text-danger">*</span></label>
+                                <select class="form-select" name="category" required>
+                                    <option value="makanan">Makanan</option>
+                                    <option value="minuman">Minuman</option>
+                                    <option value="snack">Snack</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Badge</label>
+                            <select class="form-select" name="badge">
+                                <option value="">Tidak Ada</option>
+                                <option value="best-seller">Best Seller</option>
+                                <option value="new">Baru</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Gambar</label>
+                            <input type="file" class="form-control" name="image" accept="image/*">
+                            <small class="text-muted">Format: JPG, PNG, JPEG (Max 2MB)</small>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" name="available" checked>
+                            <label class="form-check-label">Tersedia</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-success">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Menu Modal -->
+    <div class="modal fade" id="editMenuModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%); color: white;">
+                    <h5 class="modal-title">Edit Menu</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{/admin/menu/update}" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="id" id="editMenuId">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nama Menu <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="name" id="editMenuName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Deskripsi</label>
+                            <textarea class="form-control" name="description" id="editMenuDescription" rows="3"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Harga <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" name="price" id="editMenuPrice" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Kategori <span class="text-danger">*</span></label>
+                                <select class="form-select" name="category" id="editMenuCategory" required>
+                                    <option value="makanan">Makanan</option>
+                                    <option value="minuman">Minuman</option>
+                                    <option value="snack">Snack</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Badge</label>
+                            <select class="form-select" name="badge" id="editMenuBadge">
+                                <option value="">Tidak Ada</option>
+                                <option value="best-seller">Best Seller</option>
+                                <option value="new">Baru</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Gambar (Kosongkan jika tidak ingin mengubah)</label>
+                            <input type="file" class="form-control" name="image" accept="image/*" id="editMenuImage">
+                            <div class="mt-2">
+                                <img id="editImagePreview" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; display: none;">
+                            </div>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" name="available" id="editMenuAvailable">
+                            <label class="form-check-label">Tersedia</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-success">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{base :: scripts}"></div>
+    
+    <style>
+        .table th {
+            background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);
+            color: white;
+        }
+        .btn-success, .btn-warning, .btn-danger {
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+    </style>
+    
+    <script>
+        function resetAddForm() {
+            var form = document.querySelector('#addMenuModal form');
+            if (form) form.reset();
+        }
+        
+        function editMenu(id) {
+            fetch('/admin/menu/' + id)
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    document.getElementById('editMenuId').value = data.id;
+                    document.getElementById('editMenuName').value = data.name;
+                    document.getElementById('editMenuDescription').value = data.description || '';
+                    document.getElementById('editMenuPrice').value = data.price;
+                    document.getElementById('editMenuCategory').value = data.category;
+                    document.getElementById('editMenuBadge').value = data.badge || '';
+                    document.getElementById('editMenuAvailable').checked = data.available;
+                    
+                    var preview = document.getElementById('editImagePreview');
+                    if (data.image && data.image !== '') {
+                        preview.src = data.image;
+                        preview.style.display = 'block';
+                    } else {
+                        preview.style.display = 'none';
+                    }
+                    
+                    var modal = new bootstrap.Modal(document.getElementById('editMenuModal'));
+                    modal.show();
+                })
+                .catch(function(error) { console.error('Error:', error); });
+        }
+        
+        function deleteMenu(id) {
+            if(confirm('Yakin ingin menghapus menu ini? Tindakan ini tidak dapat dibatalkan!')) {
+                window.location.href = '/admin/menu/delete/' + id;
+            }
+        }
+        
+        // Preview image for edit modal
+        var editImageInput = document.getElementById('editMenuImage');
+        if (editImageInput) {
+            editImageInput.addEventListener('change', function(e) {
+                var preview = document.getElementById('editImagePreview');
+                if (e.target.files && e.target.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(e.target.files[0]);
+                } else {
+                    preview.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

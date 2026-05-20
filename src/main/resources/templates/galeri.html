@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{base :: head(title='Galeri Foto')}"></head>
+<body>
+    <div th:replace="~{base :: toast}"></div>
+    <div th:replace="~{base :: navbar}"></div>
+    
+    <div class="d-flex" style="margin-top: 70px;">
+        <div th:replace="~{base :: sidebar}"></div>
+        
+        <div class="content-area flex-grow-1 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-wood"><i class="fas fa-images me-2"></i>Galeri Foto</h2>
+            </div>
+            
+            <!-- Filter -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <select id="filterCategory" class="form-select" onchange="filterGallery()">
+                        <option value="all">Semua Kategori</option>
+                        <option value="interior">🏠 Interior</option>
+                        <option value="food">🍽️ Makanan</option>
+                        <option value="drink">☕ Minuman</option>
+                        <option value="event">🎉 Acara</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Gallery Grid -->
+            <div class="row" id="galleryContainer">
+                <div class="col-lg-3 col-md-4 col-6 mb-3" th:each="gallery : ${galleries}" th:attr="data-category=${gallery.category}">
+                    <div class="gallery-card">
+                        <img th:src="${gallery.image != null ? gallery.image : '/images/default.jpg'}" class="gallery-image">
+                        <div class="p-2">
+                            <small class="fw-bold" th:text="${gallery.title}"></small>
+                            <p class="small text-muted mb-0" th:text="${gallery.description}"></p>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${#lists.isEmpty(galleries)}" class="col-12 text-center py-5">
+                    <i class="fas fa-images fa-3x text-muted mb-2"></i>
+                    <p class="text-muted">Belum ada galeri foto</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div th:replace="~{base :: scripts}"></div>
+    
+    <style>
+        .gallery-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .gallery-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .gallery-image {
+            height: 180px;
+            width: 100%;
+            object-fit: cover;
+        }
+    </style>
+    
+    <script>
+        function filterGallery() {
+            const filter = document.getElementById('filterCategory').value;
+            const cards = document.querySelectorAll('#galleryContainer > div');
+            cards.forEach(card => {
+                const category = card.getAttribute('data-category');
+                if(filter === 'all') {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = category === filter ? 'block' : 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

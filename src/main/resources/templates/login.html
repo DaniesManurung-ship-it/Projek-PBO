@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Café Kopitiam33</title>
+    <link href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/webjars/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --sage: #8BA888;
+            --wood: #A67B5B;
+            --accent: #D97642;
+        }
+        body {
+            background: linear-gradient(135deg, var(--sage) 0%, var(--wood) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .login-logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .login-logo i {
+            font-size: 60px;
+            color: var(--accent);
+        }
+        .login-logo h3 {
+            color: var(--wood);
+            margin-top: 10px;
+        }
+        .btn-login {
+            background: var(--sage);
+            color: white;
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+        .btn-login:hover {
+            background: #6B8A6B;
+        }
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .register-link a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="login-logo">
+            <i class="fas fa-mug-hot"></i>
+            <h3>Café Kopitiam33</h3>
+            <p class="text-muted">Login untuk melanjutkan</p>
+        </div>
+        
+        <div th:if="${param.error}" class="alert alert-danger">
+            <i class="fas fa-exclamation-circle me-2"></i> Username atau password salah!
+        </div>
+        
+        <div th:if="${param.logout}" class="alert alert-success">
+            <i class="fas fa-check-circle me-2"></i> Anda telah logout!
+        </div>
+        
+        <form method="post" action="/login">
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                    <input type="text" name="username" class="form-control" placeholder="Masukkan username" required>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                    <input type="password" name="password" class="form-control" placeholder="Masukkan password" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-login">
+                <i class="fas fa-sign-in-alt me-2"></i>Login
+            </button>
+        </form>
+        
+        <div class="register-link">
+            <p>Belum punya akun? <a href="/register">Daftar Sekarang</a></p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Café Kopitiam33</title>
+    <link href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/webjars/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --sage: #8BA888;
+            --wood: #A67B5B;
+            --accent: #D97642;
+        }
+        body {
+            background: linear-gradient(135deg, var(--sage) 0%, var(--wood) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .register-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .register-logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .register-logo i {
+            font-size: 60px;
+            color: var(--accent);
+        }
+        .register-logo h3 {
+            color: var(--wood);
+            margin-top: 10px;
+        }
+        .btn-register {
+            background: var(--sage);
+            color: white;
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+        .btn-register:hover {
+            background: #6B8A6B;
+        }
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .login-link a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-card">
+        <div class="register-logo">
+            <i class="fas fa-mug-hot"></i>
+            <h3>Daftar Akun Baru</h3>
+            <p class="text-muted">Bergabung dengan Kopitiam33</p>
+        </div>
+        
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+        
+        <form method="post" action="/register">
+            <div class="mb-3">
+                <label class="form-label">Nama Lengkap</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                    <input type="text" name="fullName" class="form-control" placeholder="Masukkan nama lengkap" required>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-at"></i></span>
+                    <input type="text" name="username" class="form-control" placeholder="Masukkan username" required>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                    <input type="email" name="email" class="form-control" placeholder="Masukkan email" required>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                    <input type="password" name="password" class="form-control" placeholder="Masukkan password" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-register">
+                <i class="fas fa-user-plus me-2"></i>Daftar
+            </button>
+        </form>
+        
+        <div class="login-link">
+            <p>Sudah punya akun? <a href="/login">Login Sekarang</a></p>
+        </div>
+    </div>
+</body>
+</html>

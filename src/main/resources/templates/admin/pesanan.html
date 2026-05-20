@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{base :: head(title='Lihat Pesanan - Admin')}"></head>
+<body>
+    <div th:replace="~{base :: toast}"></div>
+    <div th:replace="~{base :: navbar}"></div>
+    
+    <div class="d-flex" style="margin-top: 70px;">
+        <div th:replace="~{base :: adminSidebar}"></div>
+
+            <!-- Main Content -->
+        <div class="content-area flex-grow-1 p-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header" style="background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%); color: white;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Daftar Pesanan</h5>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Alert Messages -->
+                        <div th:if="${param.updated != null}" class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>Status pesanan berhasil diupdate!
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        <div th:if="${param.deleted != null}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-trash me-2"></i>Pesanan berhasil dihapus!
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Customer</th>
+                                        <th>Meja</th>
+                                        <th>Total</th>
+                                        <th>Tanggal</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="pesanan : ${pesanans}">
+                                        <td th:text="${pesanan.id}"></td>
+                                        <td>
+                                            <strong th:text="${pesanan.customerName}"></strong>
+                                            <br><small class="text-muted" th:text="${pesanan.user != null ? pesanan.user.username : 'Guest'}"></small>
+                                        </td>
+                                        <td>Meja <span th:text="${pesanan.tableNumber}"></span></td>
+                                        <td class="text-success fw-bold">Rp <span th:text="${#numbers.formatInteger(pesanan.totalPrice, 0, 'COMMA')}"></span></td>
+                                        <td th:text="${#temporals.format(pesanan.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+                                        <td>
+                                            <span class="badge" th:classappend="${pesanan.status == 'pending'} ? 'bg-warning' : (${pesanan.status == 'confirmed'} ? 'bg-info' : (${pesanan.status == 'completed'} ? 'bg-success' : 'bg-danger'))">
+                                                <span th:if="${pesanan.status == 'pending'}">Pending</span>
+                                                <span th:if="${pesanan.status == 'confirmed'}">Confirmed</span>
+                                                <span th:if="${pesanan.status == 'completed'}">Completed</span>
+                                                <span th:if="${pesanan.status == 'cancelled'}">Cancelled</span>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <select class="form-select form-select-sm status-select" th:data-id="${pesanan.id}" style="width: 120px;">
+                                                <option value="pending" th:selected="${pesanan.status == 'pending'}">Pending</option>
+                                                <option value="confirmed" th:selected="${pesanan.status == 'confirmed'}">Confirmed</option>
+                                                <option value="completed" th:selected="${pesanan.status == 'completed'}">Completed</option>
+                                                <option value="cancelled" th:selected="${pesanan.status == 'cancelled'}">Cancelled</option>
+                                            </select>
+                                            <button class="btn btn-sm btn-danger ms-1" th:onclick="'deletePesanan(' + ${pesanan.id} + ')'" title="Hapus">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(pesanans)}">
+                                        <td colspan="7" class="text-center py-4">
+                                            <i class="fas fa-inbox fa-2x mb-2 opacity-50"></i>
+                                            <p class="text-muted">Belum ada pesanan</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div th:replace="~{base :: scripts}"></div>
+    
+    <style>
+        /* Table Styles */
+        .table th {
+            background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);
+            color: white;
+            font-weight: 600;
+        }
+        
+        /* Status Select */
+        .status-select {
+            font-size: 12px;
+            padding: 4px 8px;
+            width: 110px;
+            display: inline-block;
+        }
+        
+        table td {
+            vertical-align: middle;
+        }
+        
+        /* Card Styles */
+        .card {
+            border-radius: 16px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+    </style>
+    
+    <script>
+        // Attach event listeners to status selects
+        function attachStatusListeners() {
+            var selects = document.querySelectorAll('.status-select');
+            for (var i = 0; i < selects.length; i++) {
+                var select = selects[i];
+                // Remove existing listener to avoid duplicates
+                var newSelect = select.cloneNode(true);
+                select.parentNode.replaceChild(newSelect, select);
+                newSelect.addEventListener('change', function() {
+                    var id = this.getAttribute('data-id');
+                    var status = this.value;
+                    updateStatus(id, status);
+                });
+            }
+        }
+        
+        function updateStatus(id, status) {
+            var statusText = '';
+            if (status === 'confirmed') statusText = 'Confirmed';
+            else if (status === 'cancelled') statusText = 'Cancelled';
+            else if (status === 'completed') statusText = 'Completed';
+            else statusText = 'Pending';
+            
+            if(confirm('Ubah status pesanan ini menjadi ' + statusText + '?')) {
+                fetch('/admin/pesanan/status/' + id, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'status=' + status
+                }).then(function(response) {
+                    if(response.ok) {
+                        window.location.href = '/admin/pesanan?updated=true';
+                    } else {
+                        alert('Gagal mengupdate status!');
+                    }
+                }).catch(function(error) {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan!');
+                });
+            }
+        }
+        
+        function deletePesanan(id) {
+            if(confirm('Yakin ingin menghapus pesanan ini? Tindakan ini tidak dapat dibatalkan!')) {
+                window.location.href = '/admin/pesanan/delete/' + id;
+            }
+        }
+        
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            attachStatusListeners();
+        });
+    </script>
+</body>
+</html>

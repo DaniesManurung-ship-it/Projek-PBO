@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{base :: head(title='Dashboard Admin')}"></head>
+<body>
+    <div th:replace="~{base :: toast}"></div>
+    <div th:replace="~{base :: navbar}"></div>
+    
+    <div class="d-flex" style="margin-top: 70px;">
+        <div th:replace="~{base :: adminSidebar}"></div>
+        
+        <div class="content-area flex-grow-1 p-4">
+            <!-- ISI KONTEN DASHBOARD ADMIN -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-dark"><i class="fas fa-tachometer-alt me-2" style="color: #A67B5B;"></i>Dashboard Admin</h2>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <div class="card shadow-sm border-0" style="border-top: 4px solid #28a745;">
+                        <div class="card-body text-center">
+                            <i class="fas fa-utensils fa-2x mb-2" style="color: #28a745;"></i>
+                            <h4 th:text="${menuCount}">0</h4>
+                            <small>Total Menu</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card shadow-sm border-0" style="border-top: 4px solid #17a2b8;">
+                        <div class="card-body text-center">
+                            <i class="fas fa-calendar-check fa-2x mb-2" style="color: #17a2b8;"></i>
+                            <h4 th:text="${reservasiCount}">0</h4>
+                            <small>Total Reservasi</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card shadow-sm border-0" style="border-top: 4px solid #ffc107;">
+                        <div class="card-body text-center">
+                            <i class="fas fa-star fa-2x mb-2" style="color: #ffc107;"></i>
+                            <h4 th:text="${testimoniCount}">0</h4>
+                            <small>Total Testimoni</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card shadow-sm border-0" style="border-top: 4px solid #dc3545;">
+                        <div class="card-body text-center">
+                            <i class="fas fa-tags fa-2x mb-2" style="color: #dc3545;"></i>
+                            <h4 th:text="${promoCount}">0</h4>
+                            <small>Total Promo</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-sage text-white">
+                            <h6 class="mb-0">Reservasi Terbaru</h6>
+                        </div>
+                        <div class="card-body">
+                            <div th:each="reservasi : ${recentReservasi}" class="border-bottom pb-2 mb-2">
+                                <strong th:text="${reservasi.name}"></strong> - 
+                                <small th:text="${#temporals.format(reservasi.date, 'dd/MM/yyyy')}"></small>
+                                <p class="mb-0 small" th:text="${reservasi.notes}"></p>
+                            </div>
+                            <div th:if="${#lists.isEmpty(recentReservasi)}" class="text-center text-muted">
+                                Belum ada reservasi
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-sage text-white">
+                            <h6 class="mb-0">Testimoni Terbaru</h6>
+                        </div>
+                        <div class="card-body">
+                            <div th:each="testimoni : ${recentTestimoni}" class="border-bottom pb-2 mb-2">
+                                <strong th:text="${testimoni.name}"></strong>
+                                <span th:if="${!testimoni.approved}" class="badge bg-warning ms-2">Pending</span>
+                                <p class="mb-0 small" th:text="${testimoni.message}"></p>
+                            </div>
+                            <div th:if="${#lists.isEmpty(recentTestimoni)}" class="text-center text-muted">
+                                Belum ada testimoni
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div th:replace="~{base :: scripts}"></div>
+</body>
+</html>

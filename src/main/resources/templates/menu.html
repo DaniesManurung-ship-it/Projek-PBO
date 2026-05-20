@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{base :: head(title='Menu Kopitiam33')}"></head>
+
+<body>
+
+    <!-- Toast -->
+    <div th:replace="~{base :: toast}"></div>
+
+    <!-- Navbar -->
+    <div th:replace="~{base :: navbar}"></div>
+
+    <div class="d-flex" style="margin-top: 70px;">
+
+        <!-- Sidebar -->
+        <div th:replace="~{base :: sidebar}"></div>
+
+        <!-- Content -->
+        <div class="content-area flex-grow-1 p-4">
+
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-wood">
+                    <i class="fas fa-utensils me-2"></i>
+                    Menu Kopitiam33
+                </h2>
+
+                <!-- Cart Button -->
+                <button type="button"
+                        class="btn btn-sage"
+                        data-bs-toggle="modal"
+                        data-bs-target="#cartModal"
+                        onclick="viewCart()">
+
+                    <i class="fas fa-shopping-cart me-1"></i>
+                    Keranjang
+
+                    <span id="cartCount"
+                          class="badge bg-danger ms-1 rounded-pill"
+                          style="display: none;">
+                        0
+                    </span>
+                </button>
+            </div>
+
+            <!-- Alert -->
+            <div th:if="${param.ordered != null}"
+                 class="alert alert-success alert-dismissible fade show"
+                 role="alert"
+                 id="successAlert">
+
+                <i class="fas fa-check-circle me-2"></i>
+                Pesanan berhasil dikirim! Silakan tunggu konfirmasi dari admin.
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"></button>
+            </div>
+
+            <div th:if="${param.error != null}"
+                 class="alert alert-danger alert-dismissible fade show"
+                 role="alert">
+
+                <i class="fas fa-exclamation-circle me-2"></i>
+                Gagal mengirim pesanan!
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- Category Tabs -->
+            <div class="category-tabs-wrapper mb-4">
+                <div class="category-tabs">
+                    <button class="category-tab active" data-category="all" onclick="filterMenuByCategory('all')">
+                        <i class="fas fa-th-large me-2"></i>
+                        Semua Menu
+                    </button>
+                    <button class="category-tab" data-category="makanan" onclick="filterMenuByCategory('makanan')">
+                        <i class="fas fa-utensils me-2"></i>
+                        Makanan
+                        <span class="category-count" id="countMakanan">0</span>
+                    </button>
+                    <button class="category-tab" data-category="minuman" onclick="filterMenuByCategory('minuman')">
+                        <i class="fas fa-coffee me-2"></i>
+                        Minuman
+                        <span class="category-count" id="countMinuman">0</span>
+                    </button>
+                    <button class="category-tab" data-category="snack" onclick="filterMenuByCategory('snack')">
+                        <i class="fas fa-cookie-bite me-2"></i>
+                        Snack
+                        <span class="category-count" id="countSnack">0</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Menu -->
+            <div class="row" id="menuContainer">
+                <div class="col-md-4 mb-4"
+                     th:each="menu : ${menus}"
+                     th:if="${menu.available}"
+                     th:attr="data-category=${menu.category}">
+
+                    <div class="card h-100 shadow-sm">
+                        
+                        <!-- Position relative untuk badge overlay -->
+                        <div class="position-relative">
+                            <!-- Image -->
+                            <img th:src="${menu.image != null ? menu.image : '/images/default-menu.jpg'}"
+                                 class="card-img-top"
+                                 alt="Menu"
+                                 style="height: 220px; width: 100%; object-fit: cover;" 
+                                 onerror="this.src='/images/default-menu.jpg'" />
+                            
+                            <!-- Badge overlay di pojok kanan atas -->
+                            <div class="badge-overlay">
+                                <span class="badge-custom best-seller" th:if="${menu.badge == 'best-seller'}">
+                                    <i class="fas fa-star"></i> Best Seller
+                                </span>
+                                <span class="badge-custom new" th:if="${menu.badge == 'new'}">
+                                    <i class="fas fa-sparkles"></i> Baru
+                                </span>
+                            </div>
+                            
+                            <!-- Category badge di pojok kiri bawah -->
+                            <div class="category-badge-bottom">
+                                <span class="category-icon" th:switch="${menu.category}">
+                                    <span th:case="'makanan'">🍽️</span>
+                                    <span th:case="'minuman'">☕</span>
+                                    <span th:case="'snack'">🍿</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Body -->
+                        <div class="card-body d-flex flex-column">
+                            <!-- Title -->
+                            <h5 class="card-title fw-bold mb-2">
+                                <span th:text="${menu.name}"></span>
+                            </h5>
+
+                            <!-- Description -->
+                            <p class="card-text text-muted small flex-grow-1" th:text="${menu.description}">
+                            </p>
+
+                            <!-- Footer -->
+                            <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                                <div class="price-container">
+                                    <span class="price-label">Harga</span>
+                                    <span class="price-value">
+                                        Rp <span th:text="${#numbers.formatInteger(menu.price, 0, 'COMMA')}"></span>
+                                    </span>
+                                </div>
+                                
+                                <!-- Add To Cart -->
+                                <button type="button"
+                                        class="btn-add-cart"
+                                        th:attr="
+                                            data-id=${menu.id},
+                                            data-name=${menu.name},
+                                            data-price=${menu.price}"
+                                        onclick="addMenuToCart(this)">
+
+                                    <i class="fas fa-cart-plus me-1"></i>
+                                    Pesan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty -->
+                <div th:if="${#lists.isEmpty(menus)}" class="col-12 text-center py-5">
+                    <i class="fas fa-utensils fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Belum ada menu tersedia</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CART MODAL -->
+    <div class="modal fade" id="cartModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header text-white" style="background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);">
+                    <h5 class="modal-title">
+                        <i class="fas fa-shopping-cart me-2"></i>
+                        Keranjang Pesanan
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Menu</th>
+                                    <th>Harga</th>
+                                    <th>Jumlah</th>
+                                    <th>Subtotal</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cartItems">
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">
+                                        <i class="fas fa-shopping-cart fa-2x mb-2 opacity-50"></i>
+                                        <p class="mb-0">Keranjang masih kosong</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot id="cartFooter" style="display: none;">
+                                <tr class="table-light">
+                                    <td colspan="3" class="text-end fw-bold">Total:</td>
+                                    <td colspan="2">
+                                        <strong class="text-success fs-5" id="cartTotal">Rp 0</strong>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-sage" onclick="proceedToCheckout()">
+                        <i class="fas fa-check me-1"></i> Konfirmasi Pesanan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHECKOUT MODAL -->
+    <div class="modal fade" id="checkoutModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header text-white" style="background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);">
+                    <h5 class="modal-title">
+                        <i class="fas fa-clipboard-list me-2"></i>
+                        Konfirmasi Pesanan
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{/pesanan/add}" method="post" onsubmit="return validateAndSubmit()">
+                    <div class="modal-body">
+                        <input type="hidden" name="cartData" id="cartDataInput">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Nama Lengkap <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="customerName" id="customerName" placeholder="Masukkan nama Anda" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Nomor Meja <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" name="tableNumber" id="tableNumber" placeholder="Contoh: 5" min="1" max="20" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Catatan (opsional)</label>
+                            <textarea class="form-control" name="notes" id="notes" rows="2" placeholder="Contoh: Tidak pedas, extra sambal, dll"></textarea>
+                        </div>
+                        <hr>
+                        <div class="mb-3">
+                            <h6 class="fw-bold"><i class="fas fa-receipt me-1"></i>Ringkasan Pesanan:</h6>
+                            <div id="orderSummary" class="bg-light p-3 rounded" style="max-height: 200px; overflow-y: auto;">
+                                <p class="text-muted text-center mb-0">Belum ada item</p>
+                            </div>
+                            <div class="mt-2 text-end">
+                                <strong>Total: <span id="orderTotal" class="text-success fs-5">Rp 0</span></strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-sage"><i class="fas fa-check me-1"></i>Pesan Sekarang</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <div th:replace="~{base :: scripts}"></div>
+
+    <!-- Style -->
+    <style>
+        .price {
+            color: #6B8A6B;
+            font-size: 1.1rem;
+        }
+
+        /* Category Tabs Styles */
+        .category-tabs-wrapper {
+            background: white;
+            border-radius: 16px;
+            padding: 5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .category-tabs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 5px;
+        }
+
+        .category-tab {
+            flex: 1;
+            min-width: 150px;
+            padding: 12px 20px;
+            border: none;
+            background: #f8f9fa;
+            border-radius: 12px;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-tab:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .category-tab.active {
+            background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(107,138,107,0.3);
+        }
+
+        .category-tab i {
+            font-size: 16px;
+        }
+
+        .category-count {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 2px 8px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .category-tab.active .category-count {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Card Styles */
+        .card {
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: none;
+            background: white;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+        }
+
+        .card-img-top {
+            border-radius: 20px 20px 0 0;
+            transition: transform 0.5s ease;
+        }
+
+        .card:hover .card-img-top {
+            transform: scale(1.05);
+        }
+
+        /* Badge Styles */
+        .badge-overlay {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .badge-custom {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .badge-custom.best-seller {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        }
+
+        .badge-custom.new {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        }
+
+        .category-badge-bottom {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+        }
+
+        .category-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 50%;
+            font-size: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            backdrop-filter: blur(5px);
+        }
+
+        /* Price Styles */
+        .price-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .price-label {
+            font-size: 11px;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .price-value {
+            font-size: 20px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* Add to Cart Button */
+        .btn-add-cart {
+            background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-add-cart:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(107,138,107,0.4);
+        }
+
+        .btn-add-cart:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);
+            border: none;
+            padding: 8px 16px;
+            font-weight: 500;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #6B8A6B 0%, #5A7A5A 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(107,138,107,0.3);
+        }
+        
+        .btn-sage {
+            background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            font-weight: 500;
+        }
+        
+        .btn-sage:hover {
+            background: linear-gradient(135deg, #6B8A6B 0%, #5A7A5A 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(107,138,107,0.3);
+        }
+        
+        .table-light th {
+            background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);
+            color: white;
+            border: none;
+            font-weight: 500;
+        }
+        
+        .text-wood {
+            color: #5A3E2B;
+            font-weight: 600;
+        }
+        
+        .content-area {
+            background: linear-gradient(135deg, #f8f9fa 0%, #f0f2f5 100%);
+            min-height: calc(100vh - 70px);
+        }
+        
+        /* Animasi untuk tombol */
+        .btn-primary, .btn-sage, .btn-add-cart {
+            transition: all 0.3s ease;
+        }
+        
+        /* Style untuk form */
+        .form-control:focus, .form-select:focus {
+            border-color: #8BA888;
+            box-shadow: 0 0 0 0.2rem rgba(139,168,136,0.25);
+        }
+        
+        /* Custom scroll untuk ringkasan pesanan */
+        #orderSummary::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        #orderSummary::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        #orderSummary::-webkit-scrollbar-thumb {
+            background: #8BA888;
+            border-radius: 10px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .category-tabs {
+                flex-direction: column;
+            }
+            
+            .category-tab {
+                width: 100%;
+            }
+            
+            .price-value {
+                font-size: 16px;
+            }
+            
+            .btn-add-cart {
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+        }
+        
+        /* Animation for cards */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .col-md-4 {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+        
+        .col-md-4:nth-child(1) { animation-delay: 0.1s; }
+        .col-md-4:nth-child(2) { animation-delay: 0.2s; }
+        .col-md-4:nth-child(3) { animation-delay: 0.3s; }
+        .col-md-4:nth-child(4) { animation-delay: 0.4s; }
+        .col-md-4:nth-child(5) { animation-delay: 0.5s; }
+        .col-md-4:nth-child(6) { animation-delay: 0.6s; }
+    </style>
+
+    <!-- Script -->
+    <script>
+        let cart = [];
+
+        // ==================== LOAD & SAVE ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCart();
+            updateCartDisplay();
+            updateCartCount();
+            updateCategoryCounts();
+            
+            // Jika ada parameter ordered, kosongkan keranjang
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('ordered')) {
+                clearCartAfterOrder();
+            }
+        });
+
+        function saveCart() {
+            localStorage.setItem('customerCart', JSON.stringify(cart));
+        }
+
+        function loadCart() {
+            const savedCart = localStorage.getItem('customerCart');
+            if (savedCart) {
+                cart = JSON.parse(savedCart);
+            }
+        }
+        
+        // Update category counts
+        function updateCategoryCounts() {
+            const cards = document.querySelectorAll('#menuContainer > div');
+            let counts = { makanan: 0, minuman: 0, snack: 0 };
+            
+            cards.forEach(card => {
+                const category = card.getAttribute('data-category');
+                if (category && counts[category] !== undefined) {
+                    counts[category]++;
+                }
+            });
+            
+            document.getElementById('countMakanan').textContent = counts.makanan;
+            document.getElementById('countMinuman').textContent = counts.minuman;
+            document.getElementById('countSnack').textContent = counts.snack;
+        }
+        
+        // Filter menu by category
+        function filterMenuByCategory(category) {
+            // Update active tab
+            const tabs = document.querySelectorAll('.category-tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.getAttribute('data-category') === category) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            // Filter cards
+            const cards = document.querySelectorAll('#menuContainer > div');
+            cards.forEach(card => {
+                const cardCategory = card.getAttribute('data-category');
+                if (category === 'all') {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = cardCategory === category ? 'block' : 'none';
+                }
+            });
+        }
+        
+        // Fungsi untuk mengosongkan keranjang setelah pesanan berhasil
+        function clearCartAfterOrder() {
+            cart = [];
+            saveCart();
+            updateCartDisplay();
+            updateCartCount();
+            
+            setTimeout(function() {
+                showToast('✅ Pesanan berhasil! Keranjang telah dikosongkan.', false);
+            }, 1000);
+        }
+
+        // ==================== CART FUNCTIONS ====================
+        function addMenuToCart(button) {
+            const id = parseInt(button.getAttribute('data-id'));
+            const name = button.getAttribute('data-name');
+            const price = parseInt(button.getAttribute('data-price'));
+            addToCart(id, name, price);
+        }
+
+        function addToCart(id, name, price) {
+            const existingItem = cart.find(function(item) {
+                return item.id === id;
+            });
+
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({
+                    id: id,
+                    name: name,
+                    price: price,
+                    quantity: 1
+                });
+            }
+
+            saveCart();
+            updateCartDisplay();
+            updateCartCount();
+            showToast(name + ' ditambahkan ke keranjang!', false);
+        }
+
+        function updateQuantity(id, change) {
+            const item = cart.find(function(item) {
+                return item.id === id;
+            });
+
+            if (item) {
+                item.quantity += change;
+                if (item.quantity <= 0) {
+                    cart = cart.filter(function(item) {
+                        return item.id !== id;
+                    });
+                }
+                saveCart();
+                updateCartDisplay();
+                updateCartCount();
+            }
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(function(item) {
+                return item.id !== id;
+            });
+            saveCart();
+            updateCartDisplay();
+            updateCartCount();
+            showToast('Item dihapus dari keranjang', false);
+        }
+
+        // ==================== UPDATE DISPLAY ====================
+        function updateCartCount() {
+            let totalItems = 0;
+            for (let i = 0; i < cart.length; i++) {
+                totalItems += cart[i].quantity;
+            }
+
+            const cartCountElement = document.getElementById('cartCount');
+            if (cartCountElement) {
+                cartCountElement.textContent = totalItems;
+                cartCountElement.style.display = totalItems > 0 ? 'inline-block' : 'none';
+            }
+        }
+
+        function updateCartDisplay() {
+            const cartItems = document.getElementById('cartItems');
+            const cartFooter = document.getElementById('cartFooter');
+
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">' +
+                    '<i class="fas fa-shopping-cart fa-2x mb-2 opacity-50"></i>' +
+                    '<p class="mb-0">Keranjang masih kosong</p>' +
+                    '</td>' +
+                    '</tr>';
+                cartFooter.style.display = 'none';
+                return;
+            }
+
+            let total = 0;
+            let html = '';
+
+            for (let i = 0; i < cart.length; i++) {
+                const item = cart[i];
+                const subtotal = item.price * item.quantity;
+                total += subtotal;
+
+                html += '<tr>' +
+                    '<td><strong>' + escapeHtml(item.name) + '</strong></td>' +
+                    '<td>Rp ' + formatNumber(item.price) + '</td>' +
+                    '<td>' +
+                    '<div class="d-flex align-items-center gap-2">' +
+                    '<button class="btn btn-sm btn-outline-secondary" onclick="updateQuantity(' + item.id + ', -1)">-</button>' +
+                    '<span style="min-width: 30px; text-align: center;">' + item.quantity + '</span>' +
+                    '<button class="btn btn-sm btn-outline-secondary" onclick="updateQuantity(' + item.id + ', 1)">+</button>' +
+                    '</div>' +
+                    '</td>' +
+                    '<td>Rp ' + formatNumber(subtotal) + '</td>' +
+                    '<td><button class="btn btn-sm btn-danger" onclick="removeFromCart(' + item.id + ')"><i class="fas fa-trash"></i></button></td>' +
+                    '</tr>';
+            }
+
+            cartItems.innerHTML = html;
+            document.getElementById('cartTotal').innerHTML = 'Rp ' + formatNumber(total);
+            cartFooter.style.display = '';
+        }
+
+        function viewCart() {
+            updateCartDisplay();
+        }
+
+        // ==================== CHECKOUT ====================
+        function proceedToCheckout() {
+            if (cart.length === 0) {
+                showToast('Keranjang masih kosong!', true);
+                return;
+            }
+
+            let total = 0;
+            let summaryHtml = '';
+
+            for (let i = 0; i < cart.length; i++) {
+                const item = cart[i];
+                const subtotal = item.price * item.quantity;
+                total += subtotal;
+                summaryHtml += '<div class="d-flex justify-content-between mb-2">' +
+                    '<span>' + escapeHtml(item.name) + ' x ' + item.quantity + '</span>' +
+                    '<span class="text-muted">Rp ' + formatNumber(subtotal) + '</span>' +
+                    '</div>';
+            }
+
+            document.getElementById('orderSummary').innerHTML = summaryHtml;
+            document.getElementById('orderTotal').innerHTML = 'Rp ' + formatNumber(total);
+            document.getElementById('cartDataInput').value = JSON.stringify(cart);
+
+            const cartModal = bootstrap.Modal.getInstance(document.getElementById('cartModal'));
+            if (cartModal) {
+                cartModal.hide();
+            }
+
+            const checkoutModal = new bootstrap.Modal(document.getElementById('checkoutModal'));
+            checkoutModal.show();
+        }
+
+        function validateAndSubmit() {
+            const customerName = document.getElementById('customerName').value;
+            const tableNumber = document.getElementById('tableNumber').value;
+
+            if (!customerName || customerName.trim() === '') {
+                showToast('Nama lengkap harus diisi!', true);
+                return false;
+            }
+
+            if (!tableNumber || tableNumber < 1) {
+                showToast('Nomor meja harus diisi!', true);
+                return false;
+            }
+            
+            const cartData = JSON.stringify(cart);
+            document.getElementById('cartDataInput').value = cartData;
+            
+            setTimeout(function() {
+                cart = [];
+                saveCart();
+                updateCartDisplay();
+                updateCartCount();
+            }, 100);
+
+            return true;
+        }
+
+        // ==================== HELPER FUNCTIONS ====================
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        function showToast(message, isError) {
+            const toast = document.getElementById('successToast');
+            if (toast) {
+                const toastBody = toast.querySelector('.toast-body');
+                if (toastBody) {
+                    toastBody.textContent = message;
+                }
+                toast.classList.remove('bg-success', 'bg-danger');
+                toast.classList.add(isError ? 'bg-danger' : 'bg-success');
+                const bsToast = new bootstrap.Toast(toast);
+                bsToast.show();
+                setTimeout(function() {
+                    bsToast.hide();
+                }, 3000);
+            } else {
+                alert(message);
+            }
+        }
+        
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted || (performance.getEntriesByType && performance.getEntriesByType('navigation')[0].type === 'back_forward')) {
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('ordered')) {
+                    clearCartAfterOrder();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

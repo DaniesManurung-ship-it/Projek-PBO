@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{base :: head(title='Lihat Reservasi - Admin')}"></head>
+<body>
+    <div th:replace="~{base :: toast}"></div>
+    <div th:replace="~{base :: navbar}"></div>
+    
+    <div class="d-flex" style="margin-top: 70px;">
+        <div th:replace="~{base :: adminSidebar}"></div>
+
+            <!-- Main Content -->
+        <div class="content-area flex-grow-1 p-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header" style="background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%); color: white;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-calendar-check me-2"></i>Daftar Reservasi</h5>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Alert Messages -->
+                        <div th:if="${param.approved != null}" class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>Reservasi berhasil dikonfirmasi!
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        <div th:if="${param.cancelled != null}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>Reservasi berhasil dibatalkan!
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        <div th:if="${param.completed != null}" class="alert alert-info alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>Reservasi ditandai selesai!
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        <div th:if="${param.deleted != null}" class="alert alert-warning alert-dismissible fade show" role="alert">
+                            <i class="fas fa-trash me-2"></i>Reservasi berhasil dihapus!
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        
+                        <!-- Filter by Status -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <select id="statusFilter" class="form-select" onchange="filterByStatus()">
+                                    <option value="all">Semua Status</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="confirmed">Dikonfirmasi</option>
+                                    <option value="completed">Selesai</option>
+                                    <option value="cancelled">Dibatalkan</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Nama</th>
+                                        <th>Email</th>
+                                        <th>Telepon</th>
+                                        <th>Tanggal</th>
+                                        <th>Jam</th>
+                                        <th>Jumlah</th>
+                                        <th>Catatan</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reservasiTableBody">
+                                    <tr th:each="reservasi : ${reservasis}" th:attr="data-status=${reservasi.status}">
+                                        <td>
+                                            <strong th:text="${reservasi.name}"></strong>
+                                            <br><small class="text-muted" th:text="${reservasi.user != null ? reservasi.user.username : 'Guest'}"></small>
+                                        </td>
+                                        <td th:text="${reservasi.email}"></td>
+                                        <td th:text="${reservasi.phone}"></td>
+                                        <td th:text="${#temporals.format(reservasi.date, 'dd/MM/yyyy')}"></td>
+                                        <td th:text="${reservasi.time}"></td>
+                                        <td><span class="badge bg-secondary" th:text="${reservasi.people} + ' orang'"></span></td>
+                                        <td>
+                                            <span th:text="${reservasi.notes != null ? reservasi.notes : '-'}"></span>
+                                        </td>
+                                        <td>
+                                            <span class="badge" th:classappend="${reservasi.status == 'pending'} ? 'bg-warning' : (${reservasi.status == 'confirmed'} ? 'bg-info' : (${reservasi.status == 'completed'} ? 'bg-success' : 'bg-danger'))">
+                                                <span th:if="${reservasi.status == 'pending'}">Pending</span>
+                                                <span th:if="${reservasi.status == 'confirmed'}">Confirmed</span>
+                                                <span th:if="${reservasi.status == 'completed'}">Completed</span>
+                                                <span th:if="${reservasi.status == 'cancelled'}">Cancelled</span>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <select class="form-select form-select-sm status-select" th:data-id="${reservasi.id}" style="width: 120px;" onchange="updateStatus(this)">
+                                                    <option value="pending" th:selected="${reservasi.status == 'pending'}">Pending</option>
+                                                    <option value="confirmed" th:selected="${reservasi.status == 'confirmed'}">Confirmed</option>
+                                                    <option value="completed" th:selected="${reservasi.status == 'completed'}">Completed</option>
+                                                    <option value="cancelled" th:selected="${reservasi.status == 'cancelled'}">Cancelled</option>
+                                                </select>
+                                                <button class="btn btn-sm btn-danger" th:onclick="'deleteReservasi(' + ${reservasi.id} + ')'">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(reservasis)}">
+                                        <td colspan="9" class="text-center py-4">
+                                            <i class="fas fa-inbox fa-2x mb-2 opacity-50"></i>
+                                            <p class="text-muted">Belum ada reservasi</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div th:replace="~{base :: scripts}"></div>
+    
+    <style>
+        
+        /* Table Styles */
+        .table th {
+            background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);
+            color: white;
+            font-weight: 600;
+        }
+        
+        /* Button Group */
+        .btn-group {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+        
+        .status-select {
+            font-size: 12px;
+            padding: 4px 8px;
+        }
+        
+        table td {
+            vertical-align: middle;
+        }
+        
+        /* Card Styles */
+        .card {
+            border-radius: 16px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+    </style>
+    
+    <script>
+        // Function to update status when dropdown changes
+        function updateStatus(selectElement) {
+            var id = selectElement.getAttribute('data-id');
+            var status = selectElement.value;
+            
+            var statusText = '';
+            var redirectParam = '';
+            if (status === 'confirmed') {
+                statusText = 'dikonfirmasi';
+                redirectParam = 'approved';
+            } else if (status === 'cancelled') {
+                statusText = 'dibatalkan';
+                redirectParam = 'cancelled';
+            } else if (status === 'completed') {
+                statusText = 'selesai';
+                redirectParam = 'completed';
+            } else {
+                statusText = 'diupdate';
+                redirectParam = 'pending';
+            }
+            
+            if(confirm('Ubah status reservasi ini menjadi ' + statusText.toUpperCase() + '?')) {
+                fetch('/admin/reservasi/status/' + id, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'status=' + status
+                }).then(function(response) {
+                    if(response.ok) {
+                        // Redirect with status parameter to show alert
+                        window.location.href = '/admin/reservasi?' + redirectParam + '=true';
+                    } else {
+                        alert('Gagal mengupdate status!');
+                        location.reload();
+                    }
+                }).catch(function(error) {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan!');
+                    location.reload();
+                });
+            } else {
+                // Reset select to original value by reloading
+                location.reload();
+            }
+        }
+        
+        function deleteReservasi(id) {
+            if(confirm('Yakin ingin menghapus reservasi ini? Tindakan ini tidak dapat dibatalkan!')) {
+                window.location.href = '/admin/reservasi/delete/' + id;
+            }
+        }
+        
+        function filterByStatus() {
+            var filter = document.getElementById('statusFilter').value;
+            var rows = document.querySelectorAll('#reservasiTableBody tr');
+            for (var i = 0; i < rows.length; i++) {
+                var row = rows[i];
+                if(row.getAttribute('data-status')) {
+                    var status = row.getAttribute('data-status');
+                    if(filter === 'all' || status === filter) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            }
+        }
+        
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            var urlParams = new URLSearchParams(window.location.search);
+            var statusParam = urlParams.get('status');
+            if(statusParam) {
+                var filterSelect = document.getElementById('statusFilter');
+                if(filterSelect) {
+                    filterSelect.value = statusParam;
+                    filterByStatus();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

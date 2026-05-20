@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{base :: head(title='Kelola Promo - Admin')}"></head>
+<body>
+    <div th:replace="~{base :: toast}"></div>
+    <div th:replace="~{base :: navbar}"></div>
+    
+    <div class="d-flex" style="margin-top: 70px;">
+        <div th:replace="~{base :: adminSidebar}"></div>
+
+            <!-- Main Content -->
+        <div class="content-area flex-grow-1 p-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header" style="background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%); color: white;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-tags me-2"></i>Kelola Promo</h5>
+                            <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addPromoModal">
+                                <i class="fas fa-plus me-1"></i>Tambah Promo
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Alert Messages -->
+                        <div th:if="${param.success != null}" class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>Promo berhasil ditambahkan!
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        <div th:if="${param.updated != null}" class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>Promo berhasil diupdate!
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        <div th:if="${param.deleted != null}" class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>Promo berhasil dihapus!
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        <div th:if="${param.error != null}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>Gagal memproses promo!
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Gambar</th>
+                                        <th>Nama Promo</th>
+                                        <th>Harga Asli</th>
+                                        <th>Diskon</th>
+                                        <th>Harga Setelah Diskon</th>
+                                        <th>Periode</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="promo : ${promos}">
+                                        <td>
+                                            <img th:src="${promo.image != null ? promo.image : '/uploads/default.jpg'}" alt="Promo" class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;">
+                                        </td>
+                                        <td>
+                                            <strong th:text="${promo.name}"></strong>
+                                            <br><small class="text-muted" th:text="${promo.description}"></small>
+                                        </td>
+                                        <td class="text-muted">Rp <span th:text="${#numbers.formatInteger(promo.originalPrice, 0, 'COMMA')}"></span></td>
+                                        <td><span class="text-danger fw-bold" th:text="${promo.discount}"></span>%</td>
+                                        <td>
+                                            <strong class="text-success">Rp <span th:text="${#numbers.formatInteger(promo.originalPrice - (promo.originalPrice * promo.discount / 100), 0, 'COMMA')}"></span></strong>
+                                        </td>
+                                        <td>
+                                            <small><span th:text="${#temporals.format(promo.startDate, 'dd/MM/yyyy')}"></span> - <span th:text="${#temporals.format(promo.endDate, 'dd/MM/yyyy')}"></span></small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success" th:if="${promo.active}">Aktif</span>
+                                            <span class="badge bg-secondary" th:unless="${promo.active}">Tidak Aktif</span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-warning me-1" th:onclick="'editPromo(' + ${promo.id} + ')'">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" th:onclick="'deletePromo(' + ${promo.id} + ')'">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                         </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(promos)}">
+                                        <td colspan="8" class="text-center py-4">
+                                            <i class="fas fa-inbox fa-2x mb-2 opacity-50"></i>
+                                            <p class="text-muted">Belum ada promo</p>
+                                            <button class="btn btn-sage btn-sm" data-bs-toggle="modal" data-bs-target="#addPromoModal">
+                                                <i class="fas fa-plus me-1"></i>Tambah Promo Pertama
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Promo Modal -->
+    <div class="modal fade" id="addPromoModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%); color: white;">
+                    <h5 class="modal-title">Tambah Promo Baru</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{/admin/promo/add}" method="post" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Nama Promo <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Deskripsi</label>
+                                    <textarea class="form-control" name="description" rows="3"></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Diskon (%) <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" name="discount" min="1" max="100" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Harga Asli <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" name="originalPrice" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Harga Setelah Diskon</label>
+                                    <input type="text" class="form-control" id="discountedPricePreview" readonly style="background-color: #e8f5e9; font-weight: bold; color: #2e7d32;">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Tanggal Mulai <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" name="startDate" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Tanggal Berakhir <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" name="endDate" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Gambar</label>
+                                    <input type="file" class="form-control" name="image" accept="image/*">
+                                    <small class="text-muted">Format: JPG, PNG, JPEG (Max 2MB)</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" name="active" checked>
+                            <label class="form-check-label">Aktif</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-success">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Promo Modal -->
+    <div class="modal fade" id="editPromoModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%); color: white;">
+                    <h5 class="modal-title">Edit Promo</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{/admin/promo/update}" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="id" id="editPromoId">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Nama Promo <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="name" id="editPromoName" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Deskripsi</label>
+                                    <textarea class="form-control" name="description" id="editPromoDescription" rows="3"></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Diskon (%) <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" name="discount" id="editPromoDiscount" min="1" max="100" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Harga Asli <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" name="originalPrice" id="editPromoOriginalPrice" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Harga Setelah Diskon</label>
+                                    <input type="text" class="form-control" id="editDiscountedPricePreview" readonly style="background-color: #e8f5e9; font-weight: bold; color: #2e7d32;">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Tanggal Mulai <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" name="startDate" id="editPromoStartDate" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Tanggal Berakhir <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" name="endDate" id="editPromoEndDate" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Gambar (Kosongkan jika tidak ingin mengubah)</label>
+                                    <input type="file" class="form-control" name="image" accept="image/*" id="editPromoImage">
+                                    <img id="editImagePreview" class="mt-2" style="height: 100px; object-fit: cover; display: none; border-radius: 8px;">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" name="active" id="editPromoActive">
+                            <label class="form-check-label">Aktif</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-success">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div th:replace="~{base :: scripts}"></div>
+    
+    <style>
+        
+        /* Table Styles */
+        .table th {
+            background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);
+            color: white;
+            font-weight: 600;
+        }
+        
+        /* Card Styles */
+        .card {
+            border-radius: 16px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        /* Button Styles */
+        .btn-success, .btn-warning, .btn-danger {
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+    </style>
+    
+    <script>
+        // Function to calculate and display discounted price in add modal
+        function updateDiscountedPrice() {
+            var originalPrice = document.querySelector('#addPromoModal input[name="originalPrice"]').value;
+            var discount = document.querySelector('#addPromoModal input[name="discount"]').value;
+            var previewField = document.getElementById('discountedPricePreview');
+            
+            if (originalPrice && discount) {
+                var discounted = originalPrice - (originalPrice * discount / 100);
+                previewField.value = 'Rp ' + formatNumber(Math.round(discounted));
+            } else {
+                previewField.value = '';
+            }
+        }
+        
+        // Function to calculate and display discounted price in edit modal
+        function updateEditDiscountedPrice() {
+            var originalPrice = document.getElementById('editPromoOriginalPrice').value;
+            var discount = document.getElementById('editPromoDiscount').value;
+            var previewField = document.getElementById('editDiscountedPricePreview');
+            
+            if (originalPrice && discount) {
+                var discounted = originalPrice - (originalPrice * discount / 100);
+                previewField.value = 'Rp ' + formatNumber(Math.round(discounted));
+            } else {
+                previewField.value = '';
+            }
+        }
+        
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+        
+        // Add event listeners when modal is opened
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add modal listeners
+            var addModal = document.getElementById('addPromoModal');
+            if (addModal) {
+                addModal.addEventListener('show.bs.modal', function() {
+                    setTimeout(function() {
+                        var originalPriceInput = document.querySelector('#addPromoModal input[name="originalPrice"]');
+                        var discountInput = document.querySelector('#addPromoModal input[name="discount"]');
+                        if (originalPriceInput) {
+                            originalPriceInput.addEventListener('input', updateDiscountedPrice);
+                        }
+                        if (discountInput) {
+                            discountInput.addEventListener('input', updateDiscountedPrice);
+                        }
+                    }, 100);
+                });
+            }
+            
+            // Edit modal listeners will be added when edit function is called
+        });
+        
+        function editPromo(id) {
+            fetch('/admin/promo/' + id)
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    document.getElementById('editPromoId').value = data.id;
+                    document.getElementById('editPromoName').value = data.name;
+                    document.getElementById('editPromoDescription').value = data.description || '';
+                    document.getElementById('editPromoDiscount').value = data.discount;
+                    document.getElementById('editPromoOriginalPrice').value = data.originalPrice;
+                    document.getElementById('editPromoStartDate').value = data.startDate;
+                    document.getElementById('editPromoEndDate').value = data.endDate;
+                    document.getElementById('editPromoActive').checked = data.active;
+                    
+                    // Update discounted price preview
+                    updateEditDiscountedPrice();
+                    
+                    // Add event listeners for real-time calculation
+                    var originalPriceInput = document.getElementById('editPromoOriginalPrice');
+                    var discountInput = document.getElementById('editPromoDiscount');
+                    if (originalPriceInput) {
+                        originalPriceInput.addEventListener('input', updateEditDiscountedPrice);
+                    }
+                    if (discountInput) {
+                        discountInput.addEventListener('input', updateEditDiscountedPrice);
+                    }
+                    
+                    // Preview image
+                    var preview = document.getElementById('editImagePreview');
+                    if (data.image && data.image !== '') {
+                        preview.src = data.image;
+                        preview.style.display = 'block';
+                    } else {
+                        preview.style.display = 'none';
+                    }
+                    
+                    var modal = new bootstrap.Modal(document.getElementById('editPromoModal'));
+                    modal.show();
+                })
+                .catch(function(error) { console.error('Error:', error); });
+        }
+        
+        function deletePromo(id) {
+            if(confirm('Yakin ingin menghapus promo ini? Tindakan ini tidak dapat dibatalkan!')) {
+                window.location.href = '/admin/promo/delete/' + id;
+            }
+        }
+        
+        // Preview image for edit modal
+        var editImageInput = document.getElementById('editPromoImage');
+        if (editImageInput) {
+            editImageInput.addEventListener('change', function(e) {
+                var preview = document.getElementById('editImagePreview');
+                if (e.target.files && e.target.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(e.target.files[0]);
+                } else {
+                    preview.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

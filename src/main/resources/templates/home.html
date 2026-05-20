@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{base :: head(title='Beranda')}"></head>
+<body>
+    <div th:replace="~{base :: toast}"></div>
+    <div th:replace="~{base :: navbar}"></div>
+    
+    <div class="d-flex" style="margin-top: 70px;">
+        <div th:replace="~{base :: sidebar}"></div>
+        
+        <div class="content-area flex-grow-1 p-4">
+            <!-- Hero Section -->
+            <div style="background: linear-gradient(135deg, #8BA888, #A67B5B); border-radius: 24px; padding: 40px; margin-bottom: 30px; text-align: center; color: white;">
+                <h1 class="display-4 fw-bold">Selamat Datang di Kopitiam33</h1>
+                <p class="lead mb-3">Nikmati pengalaman kuliner autentik dengan cita rasa Indonesia</p>
+                <a href="/menu" class="btn btn-light btn-lg rounded-pill px-4 mt-2">
+                    <i class="fas fa-utensils me-2"></i>Lihat Menu
+                </a>
+            </div>
+            
+            <!-- Stats -->
+            <div class="row g-4 mb-5">
+                <div class="col-md-3 col-6">
+                    <div class="bg-white p-4 text-center rounded-4 shadow-sm">
+                        <i class="fas fa-utensils fa-2x" style="color: #8BA888;"></i>
+                        <h3 class="mt-2" th:text="${menuCount}">0</h3>
+                        <small class="text-muted">Menu Tersedia</small>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="bg-white p-4 text-center rounded-4 shadow-sm">
+                        <i class="fas fa-calendar-check fa-2x" style="color: #8BA888;"></i>
+                        <h3 class="mt-2" th:text="${reservasiCount}">0</h3>
+                        <small class="text-muted">Reservasi</small>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="bg-white p-4 text-center rounded-4 shadow-sm">
+                        <i class="fas fa-star fa-2x" style="color: #8BA888;"></i>
+                        <h3 class="mt-2" th:text="${testimoniCount}">0</h3>
+                        <small class="text-muted">Testimoni</small>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="bg-white p-4 text-center rounded-4 shadow-sm">
+                        <i class="fas fa-tags fa-2x" style="color: #8BA888;"></i>
+                        <h3 class="mt-2" th:text="${promoCount}">0</h3>
+                        <small class="text-muted">Promo Aktif</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Promo -->
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header" style="background: linear-gradient(135deg, #8BA888, #6B8A6B); color: white;">
+                    <h5 class="mb-0"><i class="fas fa-tags me-2"></i>Promo Spesial</h5>
+                </div>
+                <div class="card-body bg-white">
+                    <div class="row" th:if="${not #lists.isEmpty(activePromos)}">
+                        <div class="col-md-4 mb-3" th:each="promo : ${activePromos}">
+                            <div class="card h-100">
+                                <div class="position-relative">
+                                    <img th:src="${promo.image != null ? promo.image : '/uploads/default.jpg'}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                                    <span class="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 rounded m-2">-<span th:text="${promo.discount}"></span>%</span>
+                                </div>
+                                <div class="card-body">
+                                    <h6 th:text="${promo.name}"></h6>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-muted text-decoration-line-through">Rp <span th:text="${#numbers.formatInteger(promo.originalPrice, 0, 'COMMA')}"></span></span>
+                                        <span class="text-danger fw-bold">Rp <span th:text="${#numbers.formatInteger(promo.originalPrice - (promo.originalPrice * promo.discount / 100), 0, 'COMMA')}"></span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div th:if="${#lists.isEmpty(activePromos)}" class="text-center py-5 text-muted">
+                        Belum ada promo aktif
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Testimoni -->
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header" style="background: linear-gradient(135deg, #8BA888, #6B8A6B); color: white;">
+                    <h5 class="mb-0"><i class="fas fa-star me-2"></i>Testimoni Customer</h5>
+                </div>
+                <div class="card-body bg-white">
+                    <div class="row" th:if="${not #lists.isEmpty(testimonials)}">
+                        <div class="col-md-6 mb-3" th:each="testimoni : ${testimonials}">
+                            <div class="border rounded-3 p-3 h-100 bg-white">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: linear-gradient(135deg, #8BA888, #A67B5B); color: white;">
+                                        <span th:text="${#strings.substring(testimoni.name, 0, 1)}"></span>
+                                    </div>
+                                    <div>
+                                        <strong th:text="${testimoni.name}"></strong>
+                                        <div class="text-warning small">
+                                            <span th:each="i,stat : ${#numbers.sequence(1, testimoni.rating)}">★</span>
+                                            <span th:each="i,stat : ${#numbers.sequence(testimoni.rating+1, 5)}">☆</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-muted small mb-0" th:text="${testimoni.message}"></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div th:if="${#lists.isEmpty(testimonials)}" class="text-center py-5 text-muted">
+                        Belum ada testimoni
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Galeri -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header" style="background: linear-gradient(135deg, #8BA888, #6B8A6B); color: white;">
+                    <h5 class="mb-0"><i class="fas fa-images me-2"></i>Galeri Foto</h5>
+                </div>
+                <div class="card-body bg-white">
+                    <div class="row" th:if="${not #lists.isEmpty(galleries)}">
+                        <div class="col-lg-3 col-md-4 col-6 mb-3" th:each="gallery : ${galleries}">
+                            <div class="rounded-3 overflow-hidden">
+                                <img th:src="${gallery.image != null ? gallery.image : '/uploads/default.jpg'}" class="w-100" style="height: 120px; object-fit: cover;">
+                            </div>
+                        </div>
+                    </div>
+                    <div th:if="${#lists.isEmpty(galleries)}" class="text-center py-5 text-muted">
+                        Belum ada galeri
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div th:replace="~{base :: scripts}"></div>
+</body>
+</html>

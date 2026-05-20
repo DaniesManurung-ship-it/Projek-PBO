@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{base :: head(title='Kelola Testimoni - Admin')}"></head>
+<body>
+    <div th:replace="~{base :: toast}"></div>
+    <div th:replace="~{base :: navbar}"></div>
+    
+    <div class="d-flex" style="margin-top: 70px;">
+        <div th:replace="~{base :: adminSidebar}"></div>
+
+            <!-- Main Content -->
+        <div class="content-area flex-grow-1 p-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header" style="background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%); color: white;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-star me-2"></i>Kelola Testimoni</h5>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Alert Messages -->
+                        <div th:if="${param.approved != null}" class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>Testimoni berhasil disetujui!
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        <div th:if="${param.unapproved != null}" class="alert alert-warning alert-dismissible fade show" role="alert">
+                            <i class="fas fa-undo me-2"></i>Persetujuan testimoni dibatalkan!
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        <div th:if="${param.archived != null}" class="alert alert-info alert-dismissible fade show" role="alert">
+                            <i class="fas fa-archive me-2"></i>Testimoni berhasil diarsipkan!
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        <div th:if="${param.deleted != null}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-trash me-2"></i>Testimoni berhasil dihapus!
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        
+                        <!-- Filter by Status -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <select id="statusFilter" class="form-select" onchange="filterByStatus()">
+                                    <option value="all">Semua</option>
+                                    <option value="pending">Menunggu Persetujuan</option>
+                                    <option value="approved">Disetujui</option>
+                                    <option value="archived">Diarsipkan</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Nama</th>
+                                        <th>Rating</th>
+                                        <th>Pesan</th>
+                                        <th>Tanggal</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="testimoniTableBody">
+                                    <tr th:each="testimoni : ${testimonis}" th:attr="data-status=${!testimoni.approved && !testimoni.archived ? 'pending' : (testimoni.archived ? 'archived' : 'approved')}">
+                                        <td>
+                                            <strong th:text="${testimoni.name}"></strong>
+                                            <br><small class="text-muted" th:text="${testimoni.user != null ? testimoni.user.username : 'Guest'}"></small>
+                                        </td>
+                                        <td>
+                                            <div class="rating-star">
+                                                <span th:each="i,stat : ${#numbers.sequence(1, 5)}">
+                                                    <i th:if="${stat.index <= testimoni.rating}" class="fas fa-star text-warning"></i>
+                                                    <i th:if="${stat.index > testimoni.rating}" class="far fa-star text-muted"></i>
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span th:text="${#strings.abbreviate(testimoni.message, 50)}"></span>
+                                        </td>
+                                        <td>
+                                            <small th:text="${#temporals.format(testimoni.createdAt, 'dd/MM/yyyy HH:mm')}"></small>
+                                        </td>
+                                        <td>
+                                            <span class="badge" th:classappend="${!testimoni.approved && !testimoni.archived} ? 'bg-warning' : (${testimoni.archived} ? 'bg-secondary' : 'bg-success')">
+                                                <span th:if="${!testimoni.approved && !testimoni.archived}">Pending</span>
+                                                <span th:if="${testimoni.approved && !testimoni.archived}">Disetujui</span>
+                                                <span th:if="${testimoni.archived}">Diarsipkan</span>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <button th:if="${!testimoni.approved && !testimoni.archived}" 
+                                                        class="btn btn-sm btn-success me-1" 
+                                                        th:onclick="'approveTestimoni(' + ${testimoni.id} + ')'">
+                                                    <i class="fas fa-check"></i> Setujui
+                                                </button>
+                                                <button th:if="${testimoni.approved && !testimoni.archived}" 
+                                                        class="btn btn-sm btn-warning me-1" 
+                                                        th:onclick="'unapproveTestimoni(' + ${testimoni.id} + ')'">
+                                                    <i class="fas fa-undo"></i> Batalkan
+                                                </button>
+                                                <button th:if="${!testimoni.archived}" 
+                                                        class="btn btn-sm btn-info me-1" 
+                                                        th:onclick="'archiveTestimoni(' + ${testimoni.id} + ')'">
+                                                    <i class="fas fa-archive"></i> Arsipkan
+                                                </button>
+                                                <button class="btn btn-sm btn-danger" 
+                                                        th:onclick="'deleteTestimoni(' + ${testimoni.id} + ')'">
+                                                    <i class="fas fa-trash"></i> Hapus
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(testimonis)}">
+                                        <td colspan="6" class="text-center py-4">
+                                            <i class="fas fa-inbox fa-2x mb-2 opacity-50"></i>
+                                            <p class="text-muted">Belum ada testimoni</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{base :: scripts}"></div>
+    
+    <style>
+        
+        /* Table Styles */
+        .table th {
+            background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);
+            color: white;
+            font-weight: 600;
+        }
+        
+        /* Button Group */
+        .btn-group {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .rating-star {
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        
+        .table td {
+            vertical-align: middle;
+        }
+        
+        /* Card Styles */
+        .card {
+            border-radius: 16px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+    </style>
+    
+    <script>
+        function approveTestimoni(id) {
+            if(confirm('Setujui testimoni ini? Testimoni akan ditampilkan di halaman utama.')) {
+                fetch('/admin/testimoni/approve/' + id, { method: 'POST' })
+                    .then(function(response) {
+                        if(response.ok) {
+                            window.location.href = '/admin/testimoni?approved=true';
+                        } else {
+                            alert('Gagal menyetujui testimoni!');
+                        }
+                    })
+                    .catch(function(error) {
+                        console.error('Error:', error);
+                        alert('Terjadi kesalahan!');
+                    });
+            }
+        }
+
+        function unapproveTestimoni(id) {
+            if(confirm('Batalkan persetujuan testimoni ini? Testimoni tidak akan ditampilkan di halaman utama.')) {
+                fetch('/admin/testimoni/unapprove/' + id, { method: 'POST' })
+                    .then(function(response) {
+                        if(response.ok) {
+                            window.location.href = '/admin/testimoni?unapproved=true';
+                        } else {
+                            alert('Gagal membatalkan persetujuan testimoni!');
+                        }
+                    })
+                    .catch(function(error) {
+                        console.error('Error:', error);
+                        alert('Terjadi kesalahan!');
+                    });
+            }
+        }
+
+        function archiveTestimoni(id) {
+            if(confirm('Arsipkan testimoni ini? Testimoni akan dipindahkan ke arsip.')) {
+                fetch('/admin/testimoni/archive/' + id, { method: 'POST' })
+                    .then(function(response) {
+                        if(response.ok) {
+                            window.location.href = '/admin/testimoni?archived=true';
+                        } else {
+                            alert('Gagal mengarsipkan testimoni!');
+                        }
+                    })
+                    .catch(function(error) {
+                        console.error('Error:', error);
+                        alert('Terjadi kesalahan!');
+                    });
+            }
+        }
+        
+        function deleteTestimoni(id) {
+            if(confirm('Yakin ingin menghapus testimoni ini? Tindakan ini tidak dapat dibatalkan!')) {
+                window.location.href = '/admin/testimoni/delete/' + id;
+            }
+        }
+        
+        function filterByStatus() {
+            var filter = document.getElementById('statusFilter').value;
+            var rows = document.querySelectorAll('#testimoniTableBody tr');
+            for (var i = 0; i < rows.length; i++) {
+                var row = rows[i];
+                if(row.getAttribute('data-status')) {
+                    var status = row.getAttribute('data-status');
+                    if(filter === 'all' || status === filter) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            }
+        }
+        
+        // Initialize filter jika ada parameter di URL
+        document.addEventListener('DOMContentLoaded', function() {
+            var urlParams = new URLSearchParams(window.location.search);
+            if(urlParams.get('approved')) {
+                setTimeout(function() {
+                    var alert = document.querySelector('.alert-success');
+                    if(alert) alert.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+            }
+            
+            // Set filter berdasarkan status dari URL
+            var statusParam = urlParams.get('status');
+            var filterSelect = document.getElementById('statusFilter');
+            if(statusParam && filterSelect) {
+                filterSelect.value = statusParam;
+                filterByStatus();
+            }
+        });
+    </script>
+</body>
+</html>
