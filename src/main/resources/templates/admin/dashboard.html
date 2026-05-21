@@ -14,9 +14,10 @@
                 <h2 class="text-dark"><i class="fas fa-tachometer-alt me-2" style="color: #A67B5B;"></i>Dashboard Admin</h2>
             </div>
             
-            <div class="row">
+            <!-- Statistik Cards -->
+            <div class="row mb-4">
                 <div class="col-md-3 mb-3">
-                    <div class="card shadow-sm border-0" style="border-top: 4px solid #28a745;">
+                    <div class="card shadow-sm border-0 h-100" style="border-top: 4px solid #28a745;">
                         <div class="card-body text-center">
                             <i class="fas fa-utensils fa-2x mb-2" style="color: #28a745;"></i>
                             <h4 th:text="${menuCount}">0</h4>
@@ -25,16 +26,16 @@
                     </div>
                 </div>
                 <div class="col-md-3 mb-3">
-                    <div class="card shadow-sm border-0" style="border-top: 4px solid #17a2b8;">
+                    <div class="card shadow-sm border-0 h-100" style="border-top: 4px solid #17a2b8;">
                         <div class="card-body text-center">
-                            <i class="fas fa-calendar-check fa-2x mb-2" style="color: #17a2b8;"></i>
-                            <h4 th:text="${reservasiCount}">0</h4>
-                            <small>Total Reservasi</small>
+                            <i class="fas fa-shopping-cart fa-2x mb-2" style="color: #17a2b8;"></i>
+                            <h4 th:text="${pesananCount}">0</h4>
+                            <small>Total Pesanan</small>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3 mb-3">
-                    <div class="card shadow-sm border-0" style="border-top: 4px solid #ffc107;">
+                    <div class="card shadow-sm border-0 h-100" style="border-top: 4px solid #ffc107;">
                         <div class="card-body text-center">
                             <i class="fas fa-star fa-2x mb-2" style="color: #ffc107;"></i>
                             <h4 th:text="${testimoniCount}">0</h4>
@@ -43,7 +44,7 @@
                     </div>
                 </div>
                 <div class="col-md-3 mb-3">
-                    <div class="card shadow-sm border-0" style="border-top: 4px solid #dc3545;">
+                    <div class="card shadow-sm border-0 h-100" style="border-top: 4px solid #dc3545;">
                         <div class="card-body text-center">
                             <i class="fas fa-tags fa-2x mb-2" style="color: #dc3545;"></i>
                             <h4 th:text="${promoCount}">0</h4>
@@ -53,37 +54,77 @@
                 </div>
             </div>
             
-            <div class="row mt-4">
-                <div class="col-md-6">
+            <!-- Chart Pesanan Per Bulan -->
+            <div class="row mb-4">
+                <div class="col-12">
                     <div class="card shadow-sm border-0">
                         <div class="card-header bg-sage text-white">
-                            <h6 class="mb-0">Reservasi Terbaru</h6>
+                            <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Statistik Pesanan Per Bulan</h6>
                         </div>
                         <div class="card-body">
-                            <div th:each="reservasi : ${recentReservasi}" class="border-bottom pb-2 mb-2">
-                                <strong th:text="${reservasi.name}"></strong> - 
-                                <small th:text="${#temporals.format(reservasi.date, 'dd/MM/yyyy')}"></small>
-                                <p class="mb-0 small" th:text="${reservasi.notes}"></p>
+                            <canvas id="orderChart" style="width: 100%; height: 300px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Testimoni Terbaru -->
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-sage text-white">
+                            <h6 class="mb-0"><i class="fas fa-star me-2"></i>Testimoni Terbaru</h6>
+                        </div>
+                        <div class="card-body">
+                            <div th:each="testimoni : ${recentTestimoni}" class="border-bottom pb-2 mb-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong th:text="${testimoni.name}"></strong>
+                                    <span th:if="${!testimoni.approved}" class="badge bg-warning">Pending</span>
+                                    <span th:if="${testimoni.approved}" class="badge bg-success">Approved</span>
+                                </div>
+                                <div class="small text-warning mb-1">
+                                    <span th:each="i,stat : ${#numbers.sequence(1, 5)}">
+                                        <i th:if="${stat.index <= testimoni.rating}" class="fas fa-star"></i>
+                                        <i th:if="${stat.index > testimoni.rating}" class="far fa-star"></i>
+                                    </span>
+                                </div>
+                                <p class="mb-0 small text-muted" th:text="${testimoni.message}"></p>
+                                <small class="text-muted" th:text="${#temporals.format(testimoni.createdAt, 'dd MMM yyyy')}"></small>
                             </div>
-                            <div th:if="${#lists.isEmpty(recentReservasi)}" class="text-center text-muted">
-                                Belum ada reservasi
+                            <div th:if="${#lists.isEmpty(recentTestimoni)}" class="text-center text-muted py-3">
+                                <i class="fas fa-star fa-2x mb-2 d-block text-muted"></i>
+                                Belum ada testimoni
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6">
+                
+                <!-- Pesanan Terbaru -->
+                <div class="col-md-6 mb-3">
                     <div class="card shadow-sm border-0">
                         <div class="card-header bg-sage text-white">
-                            <h6 class="mb-0">Testimoni Terbaru</h6>
+                            <h6 class="mb-0"><i class="fas fa-receipt me-2"></i>Pesanan Terbaru</h6>
                         </div>
                         <div class="card-body">
-                            <div th:each="testimoni : ${recentTestimoni}" class="border-bottom pb-2 mb-2">
-                                <strong th:text="${testimoni.name}"></strong>
-                                <span th:if="${!testimoni.approved}" class="badge bg-warning ms-2">Pending</span>
-                                <p class="mb-0 small" th:text="${testimoni.message}"></p>
+                            <div th:each="pesanan : ${recentPesanan}" class="border-bottom pb-2 mb-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong th:text="${pesanan.customerName}"></strong>
+                                    <span class="badge" th:classappend="${pesanan.status == 'pending' ? 'bg-warning' : (pesanan.status == 'confirmed' ? 'bg-primary' : (pesanan.status == 'completed' ? 'bg-success' : 'bg-danger'))}">
+                                        <span th:if="${pesanan.status == 'pending'}">Menunggu</span>
+                                        <span th:if="${pesanan.status == 'confirmed'}">Dikonfirmasi</span>
+                                        <span th:if="${pesanan.status == 'completed'}">Selesai</span>
+                                        <span th:if="${pesanan.status == 'cancelled'}">Dibatalkan</span>
+                                    </span>
+                                </div>
+                                <p class="mb-0 small text-muted">
+                                    <i class="fas fa-money-bill me-1"></i> Total: Rp <span th:text="${#numbers.formatInteger(pesanan.totalPrice, 0, 'COMMA')}"></span>
+                                    <i class="fas fa-clock ms-2 me-1"></i> <span th:text="${#temporals.format(pesanan.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
+                                </p>
+                                <small class="text-muted" th:text="${'Meja ' + pesanan.tableNumber}"></small>
                             </div>
-                            <div th:if="${#lists.isEmpty(recentTestimoni)}" class="text-center text-muted">
-                                Belum ada testimoni
+                            <div th:if="${#lists.isEmpty(recentPesanan)}" class="text-center text-muted py-3">
+                                <i class="fas fa-receipt fa-2x mb-2 d-block text-muted"></i>
+                                Belum ada pesanan
                             </div>
                         </div>
                     </div>
@@ -91,6 +132,82 @@
             </div>
         </div>
     </div>
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <script>
+        // Data chart dari server
+        const chartLabels = /*[[${chartLabels}]]*/ ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        const chartData = /*[[${chartData}]]*/ [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        
+        // Render chart saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('orderChart')?.getContext('2d');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: chartLabels,
+                        datasets: [{
+                            label: 'Jumlah Pesanan',
+                            data: chartData,
+                            backgroundColor: 'rgba(139, 168, 136, 0.7)',
+                            borderColor: '#8BA888',
+                            borderWidth: 1,
+                            borderRadius: 8,
+                            barPercentage: 0.65,
+                            categoryPercentage: 0.8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    font: { size: 12 },
+                                    usePointStyle: true,
+                                    boxWidth: 8
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return 'Pesanan: ' + context.raw + ' order';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: '#e5e7eb' },
+                                title: {
+                                    display: true,
+                                    text: 'Jumlah Pesanan',
+                                    font: { size: 11 }
+                                },
+                                ticks: {
+                                    stepSize: 1,
+                                    precision: 0
+                                }
+                            },
+                            x: {
+                                grid: { display: false },
+                                title: {
+                                    display: true,
+                                    text: 'Bulan',
+                                    font: { size: 11 }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
     
     <div th:replace="~{base :: scripts}"></div>
 </body>

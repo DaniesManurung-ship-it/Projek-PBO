@@ -53,7 +53,6 @@ public class SecurityConfig {
                 .requestMatchers("/", "/home", "/login", "/register", "/css/**", "/js/**", 
                                 "/webjars/**", "/uploads/**", "/images/**", "/error").permitAll()
                 .requestMatchers("/menu/**", "/promo/**", "/galeri/**").authenticated()
-                .requestMatchers("/reservasi/**", "/testimoni/**").authenticated()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )

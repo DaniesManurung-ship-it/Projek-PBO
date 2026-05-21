@@ -22,7 +22,6 @@ public class AdminController {
     private final PromoRepository promoRepository;
     private final TestimoniRepository testimoniRepository;
     private final GaleriRepository galeriRepository;
-    private final ReservasiRepository reservasiRepository;
     private final PesananRepository pesananRepository;
     private final ImageService imageService;
 
@@ -30,14 +29,12 @@ public class AdminController {
                          PromoRepository promoRepository,
                          TestimoniRepository testimoniRepository,
                          GaleriRepository galeriRepository,
-                         ReservasiRepository reservasiRepository,
                          PesananRepository pesananRepository,
                          ImageService imageService) {
         this.menuRepository = menuRepository;
         this.promoRepository = promoRepository;
         this.testimoniRepository = testimoniRepository;
         this.galeriRepository = galeriRepository;
-        this.reservasiRepository = reservasiRepository;
         this.pesananRepository = pesananRepository;
         this.imageService = imageService;
     }
@@ -45,13 +42,10 @@ public class AdminController {
     @GetMapping({"", "/"})
     public String dashboard(Model model) {
         model.addAttribute("menuCount", menuRepository.count());
-        model.addAttribute("reservasiCount", reservasiRepository.count());
         model.addAttribute("testimoniCount", testimoniRepository.count());
         model.addAttribute("promoCount", promoRepository.count());
         model.addAttribute("pesananCount", pesananRepository.count());
 
-        List<Reservasi> recentReservasi = reservasiRepository.findAllByOrderByCreatedAtDesc().stream().limit(5).toList();
-        model.addAttribute("recentReservasi", recentReservasi);
 
         List<Testimoni> recentTestimoni = testimoniRepository.findAllByOrderByCreatedAtDesc().stream().limit(5).toList();
         model.addAttribute("recentTestimoni", recentTestimoni);
@@ -351,45 +345,6 @@ public class AdminController {
         return galeriRepository.findById(id).orElse(null);
     }
 
-    // ==================== RESERVASI ====================
-    @GetMapping("/reservasi")
-    public String viewReservasi(Model model) {
-        model.addAttribute("reservasis", reservasiRepository.findAllByOrderByCreatedAtDesc());
-        return "admin/reservasi";
-    }
-
-    @PostMapping("/reservasi/status/{id}")
-    @ResponseBody
-    public String updateReservasiStatus(@PathVariable Long id, @RequestParam String status) {
-        Reservasi reservasi = reservasiRepository.findById(id).orElse(null);
-        if (reservasi != null) {
-            reservasi.setStatus(status);
-            if (status.equals("confirmed") || status.equals("cancelled") || status.equals("completed")) {
-                reservasi.setCanEdit(false);
-            }
-            reservasiRepository.save(reservasi);
-            return "success";
-        }
-        return "error";
-    }
-
-    @GetMapping("/reservasi/{id}")
-    @ResponseBody
-    public Reservasi getReservasi(@PathVariable Long id) {
-        return reservasiRepository.findById(id).orElse(null);
-    }
-
-    @GetMapping("/reservasi/delete/{id}")
-    public String deleteReservasi(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        try {
-            reservasiRepository.deleteById(id);
-            redirectAttributes.addFlashAttribute("deleted", "Reservasi berhasil dihapus!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Gagal menghapus reservasi: " + e.getMessage());
-        }
-        return "redirect:/admin/reservasi";
-    }
-
     // ==================== TESTIMONI ====================
     @GetMapping("/testimoni")
     public String manageTestimoni(Model model) {
@@ -479,5 +434,6 @@ public class AdminController {
     public Pesanan getPesanan(@PathVariable Long id) {
         return pesananRepository.findById(id).orElse(null);
     }
+    
     
 }

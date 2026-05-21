@@ -17,8 +17,6 @@ public class Pesanan {
     @Column(nullable = false)
     private String customerName;
     
-    @Column(nullable = false)
-    private Integer tableNumber;
     
     @Column(length = 500)
     private String notes;
@@ -44,8 +42,6 @@ public class Pesanan {
     public void setUser(User user) { this.user = user; }
     public String getCustomerName() { return customerName; }
     public void setCustomerName(String customerName) { this.customerName = customerName; }
-    public Integer getTableNumber() { return tableNumber; }
-    public void setTableNumber(Integer tableNumber) { this.tableNumber = tableNumber; }
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
     public String getItems() { return items; }

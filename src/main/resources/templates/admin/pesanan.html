@@ -8,78 +8,130 @@
     <div class="d-flex" style="margin-top: 70px;">
         <div th:replace="~{base :: adminSidebar}"></div>
 
-            <!-- Main Content -->
+        <!-- Main Content -->
         <div class="content-area flex-grow-1 p-4">
-                <div class="card shadow-sm border-0">
-                    <div class="card-header" style="background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%); color: white;">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Daftar Pesanan</h5>
-                        </div>
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <div class="admin-card-title">
+                        <i class="fas fa-receipt"></i>
+                        <h5 class="mb-0">Daftar Pesanan</h5>
                     </div>
-                    <div class="card-body">
-                        <!-- Alert Messages -->
-                        <div th:if="${param.updated != null}" class="alert alert-success alert-dismissible fade show" role="alert">
-                            <i class="fas fa-check-circle me-2"></i>Status pesanan berhasil diupdate!
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                        <div th:if="${param.deleted != null}" class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="fas fa-trash me-2"></i>Pesanan berhasil dihapus!
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                        
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Customer</th>
-                                        <th>Meja</th>
-                                        <th>Total</th>
-                                        <th>Tanggal</th>
-                                        <th>Status</th>
-                                        <th>Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="pesanan : ${pesanans}">
-                                        <td th:text="${pesanan.id}"></td>
-                                        <td>
-                                            <strong th:text="${pesanan.customerName}"></strong>
-                                            <br><small class="text-muted" th:text="${pesanan.user != null ? pesanan.user.username : 'Guest'}"></small>
-                                        </td>
-                                        <td>Meja <span th:text="${pesanan.tableNumber}"></span></td>
-                                        <td class="text-success fw-bold">Rp <span th:text="${#numbers.formatInteger(pesanan.totalPrice, 0, 'COMMA')}"></span></td>
-                                        <td th:text="${#temporals.format(pesanan.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
-                                        <td>
-                                            <span class="badge" th:classappend="${pesanan.status == 'pending'} ? 'bg-warning' : (${pesanan.status == 'confirmed'} ? 'bg-info' : (${pesanan.status == 'completed'} ? 'bg-success' : 'bg-danger'))">
-                                                <span th:if="${pesanan.status == 'pending'}">Pending</span>
-                                                <span th:if="${pesanan.status == 'confirmed'}">Confirmed</span>
-                                                <span th:if="${pesanan.status == 'completed'}">Completed</span>
-                                                <span th:if="${pesanan.status == 'cancelled'}">Cancelled</span>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <select class="form-select form-select-sm status-select" th:data-id="${pesanan.id}" style="width: 120px;">
-                                                <option value="pending" th:selected="${pesanan.status == 'pending'}">Pending</option>
-                                                <option value="confirmed" th:selected="${pesanan.status == 'confirmed'}">Confirmed</option>
-                                                <option value="completed" th:selected="${pesanan.status == 'completed'}">Completed</option>
-                                                <option value="cancelled" th:selected="${pesanan.status == 'cancelled'}">Cancelled</option>
+                    <div class="admin-card-stats">
+                        <span class="stat-badge total" th:text="${#lists.size(pesanans)} + ' Pesanan'">0 Pesanan</span>
+                    </div>
+                </div>
+                
+                <div class="admin-card-body">
+                    <!-- Alert Messages - Desain Modern -->
+                    <div th:if="${param.updated != null}" class="alert-modern alert-success-modern alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>Status pesanan berhasil diupdate!
+                        <button type="button" class="btn-close-custom" data-bs-dismiss="alert">&times;</button>
+                    </div>
+                    <div th:if="${param.deleted != null}" class="alert-modern alert-danger-modern alert-dismissible fade show" role="alert">
+                        <i class="fas fa-trash-alt me-2"></i>Pesanan berhasil dihapus!
+                        <button type="button" class="btn-close-custom" data-bs-dismiss="alert">&times;</button>
+                    </div>
+                    
+                    <div class="table-responsive-modern">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ID Pesanan</th>
+                                    <th>Customer</th>
+                                    <th>Total Harga</th>
+                                    <th>Tanggal</th>
+                                    <th>Status</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="pesanan : ${pesanans}">
+                                    <td class="order-id" th:text="'#' + ${pesanan.id}"></td>
+                                    <td>
+                                        <div class="customer-info">
+                                            <strong class="customer-name" th:text="${pesanan.customerName}"></strong>
+                                            <small class="customer-username" th:text="${pesanan.user != null ? pesanan.user.username : 'Guest'}"></small>
+                                     
+                                        </div>
+                                    </td>
+                                    <td class="order-total">
+                                        <span class="total-amount">Rp <span th:text="${#numbers.formatInteger(pesanan.totalPrice, 0, 'COMMA')}"></span></span>
+                                    </td>
+                                    <td class="order-date">
+                                        <i class="far fa-calendar-alt me-1"></i>
+                                        <span th:text="${#temporals.format(pesanan.createdAt, 'dd/MM/yyyy')}"></span>
+                                        <br>
+                                        <small class="order-time">
+                                            <i class="far fa-clock me-1"></i>
+                                            <span th:text="${#temporals.format(pesanan.createdAt, 'HH:mm')}"></span>
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge-admin" th:classappend="${pesanan.status == 'pending'} ? 'status-pending' : (${pesanan.status == 'confirmed'} ? 'status-confirmed' : (${pesanan.status == 'completed'} ? 'status-completed' : 'status-cancelled'))">
+                                            <i th:if="${pesanan.status == 'pending'}" class="fas fa-clock me-1"></i>
+                                            <i th:if="${pesanan.status == 'confirmed'}" class="fas fa-check-circle me-1"></i>
+                                            <i th:if="${pesanan.status == 'completed'}" class="fas fa-trophy me-1"></i>
+                                            <i th:if="${pesanan.status == 'cancelled'}" class="fas fa-times-circle me-1"></i>
+                                            <span th:if="${pesanan.status == 'pending'}">Menunggu</span>
+                                            <span th:if="${pesanan.status == 'confirmed'}">Dikonfirmasi</span>
+                                            <span th:if="${pesanan.status == 'completed'}">Selesai</span>
+                                            <span th:if="${pesanan.status == 'cancelled'}">Dibatalkan</span>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="action-group">
+                                            <select class="status-select-modern" th:data-id="${pesanan.id}">
+                                                <option value="pending" th:selected="${pesanan.status == 'pending'}">⏳ Menunggu</option>
+                                                <option value="confirmed" th:selected="${pesanan.status == 'confirmed'}">✅ Dikonfirmasi</option>
+                                                <option value="completed" th:selected="${pesanan.status == 'completed'}">🏆 Selesai</option>
+                                                <option value="cancelled" th:selected="${pesanan.status == 'cancelled'}">❌ Dibatalkan</option>
                                             </select>
-                                            <button class="btn btn-sm btn-danger ms-1" th:onclick="'deletePesanan(' + ${pesanan.id} + ')'" title="Hapus">
-                                                <i class="fas fa-trash"></i>
+                                            <button class="btn-action-delete" th:onclick="'deletePesanan(' + ${pesanan.id} + ')'" title="Hapus Pesanan">
+                                                <i class="fas fa-trash-alt"></i>
                                             </button>
-                                        </td>
-                                    </tr>
-                                    <tr th:if="${#lists.isEmpty(pesanans)}">
-                                        <td colspan="7" class="text-center py-4">
-                                            <i class="fas fa-inbox fa-2x mb-2 opacity-50"></i>
-                                            <p class="text-muted">Belum ada pesanan</p>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                                            <button class="btn-action-view" th:onclick="'viewDetail(' + ${pesanan.id} + ')'" title="Lihat Detail">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                 '</tr>
+                                <tr th:if="${#lists.isEmpty(pesanans)}">
+                                    <td colspan="6" class="text-center py-5">
+                                        <div class="empty-state-admin">
+                                            <i class="fas fa-inbox fa-3x mb-3 opacity-25"></i>
+                                            <p class="text-muted mb-0">Belum ada pesanan</p>
+                                        </div>
+                                     </td>
+                                 </tr>
+                            </tbody>
+                        </table>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Detail Pesanan Modal -->
+    <div class="modal fade" id="detailPesananModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content modern-modal">
+                <div class="modal-header modern-modal-header">
+                    <div class="modal-header-icon">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <h5 class="modal-title">Detail Pesanan</h5>
+                    <button type="button" class="btn-close-modern" data-bs-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body modern-modal-body" id="detailPesananContent">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-success" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Memuat detail pesanan...</p>
+                    </div>
+                </div>
+                <div class="modal-footer modern-modal-footer">
+                    <button type="button" class="btn-cancel" data-bs-dismiss="modal">Tutup</button>
                 </div>
             </div>
         </div>
@@ -88,37 +140,524 @@
     <div th:replace="~{base :: scripts}"></div>
     
     <style>
-        /* Table Styles */
-        .table th {
+        /* Content Area */
+        .content-area {
+            background: linear-gradient(135deg, #F5EFE6 0%, #E8DCCB 100%);
+            min-height: calc(100vh - 70px);
+        }
+        
+        /* ==================== ADMIN CARD ==================== */
+        .admin-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        .admin-card-header {
             background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);
+            padding: 18px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .admin-card-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             color: white;
+        }
+        
+        .admin-card-title i {
+            font-size: 24px;
+        }
+        
+        .admin-card-title h5 {
             font-weight: 600;
+            margin: 0;
         }
         
-        /* Status Select */
-        .status-select {
-            font-size: 12px;
-            padding: 4px 8px;
-            width: 110px;
-            display: inline-block;
+        .admin-card-stats {
+            display: flex;
+            gap: 10px;
         }
         
-        table td {
+        .stat-badge {
+            padding: 6px 16px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 30px;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .admin-card-body {
+            padding: 24px;
+        }
+        
+        /* ==================== ALERT MODERN ==================== */
+        .alert-modern {
+            padding: 14px 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            position: relative;
+            font-size: 0.85rem;
+        }
+        
+        .alert-success-modern {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+        
+        .alert-danger-modern {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .btn-close-custom {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            opacity: 0.5;
+        }
+        
+        .btn-close-custom:hover {
+            opacity: 1;
+        }
+        
+        /* ==================== TABLE MODERN ==================== */
+        .table-responsive-modern {
+            overflow-x: auto;
+        }
+        
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .admin-table thead th {
+            background: #f8f9fa;
+            padding: 15px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #5A3E2B;
+            border-bottom: 2px solid #e9ecef;
+            text-align: left;
+        }
+        
+        .admin-table tbody td {
+            padding: 16px 15px;
+            border-bottom: 1px solid #f0f0f0;
             vertical-align: middle;
         }
         
-        /* Card Styles */
-        .card {
-            border-radius: 16px;
+        .admin-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        /* Order ID */
+        .order-id {
+            font-weight: 700;
+            color: #8BA888;
+            font-size: 0.9rem;
+        }
+        
+        /* Customer Info */
+        .customer-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .customer-name {
+            font-size: 0.9rem;
+            color: #5A3E2B;
+            margin-bottom: 4px;
+        }
+        
+        .customer-username {
+            font-size: 0.7rem;
+            color: #6c757d;
+        }
+        
+        .customer-table {
+            font-size: 0.7rem;
+            color: #8BA888;
+            margin-top: 4px;
+        }
+        
+        /* Order Total */
+        .order-total {
+            font-weight: 700;
+        }
+        
+        .total-amount {
+            color: #D97642;
+            font-size: 0.95rem;
+        }
+        
+        /* Order Date */
+        .order-date {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        
+        .order-time {
+            font-size: 0.7rem;
+            color: #adb5bd;
+        }
+        
+        /* Status Badge */
+        .status-badge-admin {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background: #f39c1220;
+            color: #e67e22;
+        }
+        
+        .status-confirmed {
+            background: #3498db20;
+            color: #2980b9;
+        }
+        
+        .status-completed {
+            background: #27ae6020;
+            color: #229954;
+        }
+        
+        .status-cancelled {
+            background: #e74c3c20;
+            color: #c0392b;
+        }
+        
+        /* Action Group */
+        .action-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .status-select-modern {
+            padding: 8px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .status-select-modern:focus {
+            outline: none;
+            border-color: #8BA888;
+        }
+        
+        .btn-action-delete {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            border: none;
+            background: #e74c3c20;
+            color: #e74c3c;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .btn-action-delete:hover {
+            background: #e74c3c;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .btn-action-view {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            border: none;
+            background: #8BA88820;
+            color: #6B8A6B;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .btn-action-view:hover {
+            background: #8BA888;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        /* Empty State */
+        .empty-state-admin {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        /* ==================== MODAL MODERN ==================== */
+        .modern-modal {
+            border-radius: 28px;
+            border: none;
             overflow: hidden;
-            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .modern-modal-header {
+            background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: none;
+        }
+        
+        .modal-header-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+        
+        .modern-modal-header .modal-title {
+            flex: 1;
+            color: white;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .btn-close-modern {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-close-modern:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .modern-modal-body {
+            padding: 24px;
+        }
+        
+        .modern-modal-footer {
+            padding: 16px 24px 24px 24px;
+            border: none;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        
+        /* Detail Items */
+        .detail-section {
+            margin-bottom: 24px;
+        }
+        
+        .detail-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #5A3E2B;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .detail-label {
+            font-size: 0.7rem;
+            color: #6c757d;
+            margin-bottom: 4px;
+        }
+        
+        .detail-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #5A3E2B;
+        }
+        
+        .items-list {
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 16px;
+        }
+        
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .item-row:last-child {
+            border-bottom: none;
+        }
+        
+        .item-name {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #5A3E2B;
+        }
+        
+        .item-price {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        
+        .item-subtotal {
+            font-weight: 700;
+            color: #D97642;
+        }
+        
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            margin-top: 8px;
+            border-top: 2px solid #dee2e6;
+        }
+        
+        .total-label {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #5A3E2B;
+        }
+        
+        .total-value {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #D97642;
+        }
+        
+        /* Modal Buttons */
+        .btn-cancel {
+            padding: 10px 24px;
+            background: #f8f9fa;
+            border: none;
+            border-radius: 40px;
+            color: #6c757d;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-cancel:hover {
+            background: #e9ecef;
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .admin-card {
+            animation: fadeInUp 0.4s ease;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .content-area {
+                padding: 1rem !important;
+            }
+            
+            .admin-card-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .admin-card-body {
+                padding: 16px;
+            }
+            
+            .admin-table thead th {
+                padding: 10px;
+                font-size: 0.75rem;
+            }
+            
+            .admin-table tbody td {
+                padding: 12px 10px;
+            }
+            
+            .action-group {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .status-select-modern {
+                width: 100%;
+            }
+            
+            .detail-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #F5EFE6;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #8BA888, #6B8A6B);
+            border-radius: 10px;
         }
     </style>
     
     <script>
-        // Attach event listeners to status selects
+        // Attach event listeners to status selects - TIDAK DIUBAH
         function attachStatusListeners() {
-            var selects = document.querySelectorAll('.status-select');
+            var selects = document.querySelectorAll('.status-select-modern');
             for (var i = 0; i < selects.length; i++) {
                 var select = selects[i];
                 // Remove existing listener to avoid duplicates
@@ -134,10 +673,10 @@
         
         function updateStatus(id, status) {
             var statusText = '';
-            if (status === 'confirmed') statusText = 'Confirmed';
-            else if (status === 'cancelled') statusText = 'Cancelled';
-            else if (status === 'completed') statusText = 'Completed';
-            else statusText = 'Pending';
+            if (status === 'confirmed') statusText = 'Dikonfirmasi';
+            else if (status === 'cancelled') statusText = 'Dibatalkan';
+            else if (status === 'completed') statusText = 'Selesai';
+            else statusText = 'Menunggu';
             
             if(confirm('Ubah status pesanan ini menjadi ' + statusText + '?')) {
                 fetch('/admin/pesanan/status/' + id, {
@@ -163,9 +702,142 @@
             }
         }
         
+        // View detail pesanan
+        function viewDetail(id) {
+            var modal = new bootstrap.Modal(document.getElementById('detailPesananModal'));
+            var contentDiv = document.getElementById('detailPesananContent');
+            
+            contentDiv.innerHTML = '<div class="text-center py-4">' +
+                '<div class="spinner-border text-success" role="status"></div>' +
+                '<p class="mt-2 text-muted">Memuat detail pesanan...</p>' +
+                '</div>';
+            
+            modal.show();
+            
+            fetch('/pesanan/detail/' + id)
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    var itemsHtml = '';
+                    var total = 0;
+                    
+                    if (data.items) {
+                        try {
+                            var items = JSON.parse(data.items);
+                            for (var i = 0; i < items.length; i++) {
+                                var item = items[i];
+                                var subtotal = item.price * item.quantity;
+                                total += subtotal;
+                                itemsHtml += '<div class="item-row">' +
+                                    '<div>' +
+                                    '<div class="item-name">' + escapeHtml(item.name) + '</div>' +
+                                    '<div class="item-price">Rp ' + formatNumber(item.price) + ' x ' + item.quantity + '</div>' +
+                                    '</div>' +
+                                    '<div class="item-subtotal">Rp ' + formatNumber(subtotal) + '</div>' +
+                                    '</div>';
+                            }
+                        } catch(e) {
+                            itemsHtml = '<p class="text-muted text-center">Tidak dapat memuat item</p>';
+                        }
+                    }
+                    
+                    var statusText = '';
+                    var statusIcon = '';
+                    if (data.status === 'pending') {
+                        statusText = 'Menunggu Konfirmasi';
+                        statusIcon = '⏳';
+                    } else if (data.status === 'confirmed') {
+                        statusText = 'Dikonfirmasi';
+                        statusIcon = '✅';
+                    } else if (data.status === 'completed') {
+                        statusText = 'Selesai';
+                        statusIcon = '🏆';
+                    } else if (data.status === 'cancelled') {
+                        statusText = 'Dibatalkan';
+                        statusIcon = '❌';
+                    }
+                    
+                    contentDiv.innerHTML = 
+                        '<div class="detail-section">' +
+                            '<h6 class="detail-title"><i class="fas fa-info-circle me-2"></i>Informasi Pesanan</h6>' +
+                            '<div class="detail-grid">' +
+                                '<div class="detail-item">' +
+                                    '<span class="detail-label">ID Pesanan</span>' +
+                                    '<span class="detail-value">#' + data.id + '</span>' +
+                                '</div>' +
+                                '<div class="detail-item">' +
+                                    '<span class="detail-label">Tanggal Pesanan</span>' +
+                                    '<span class="detail-value">' + new Date(data.createdAt).toLocaleString('id-ID') + '</span>' +
+                                '</div>' +
+                                '<div class="detail-item">' +
+                                    '<span class="detail-label">Nama Customer</span>' +
+                                    '<span class="detail-value">' + escapeHtml(data.customerName) + '</span>' +
+                                '</div>' +
+                                '<div class="detail-item">' +
+                                    '<span class="detail-label">Nomor Meja</span>' +
+                                    '<span class="detail-value">' + (data.tableNumber || '-') + '</span>' +
+                                '</div>' +
+                                '<div class="detail-item">' +
+                                    '<span class="detail-label">Status</span>' +
+                                    '<span class="detail-value">' + statusIcon + ' ' + statusText + '</span>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="detail-section">' +
+                            '<h6 class="detail-title"><i class="fas fa-shopping-cart me-2"></i>Item Pesanan</h6>' +
+                            '<div class="items-list">' +
+                                itemsHtml +
+                                '<div class="total-row">' +
+                                    '<span class="total-label">Total Seluruhnya</span>' +
+                                    '<span class="total-value">Rp ' + formatNumber(total) + '</span>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>';
+                    
+                    if (data.notes && data.notes !== '') {
+                        contentDiv.innerHTML += 
+                            '<div class="detail-section">' +
+                                '<h6 class="detail-title"><i class="fas fa-sticky-note me-2"></i>Catatan</h6>' +
+                                '<div class="bg-light p-3 rounded-3">' +
+                                    '<p class="mb-0">' + escapeHtml(data.notes) + '</p>' +
+                                '</div>' +
+                            '</div>';
+                    }
+                })
+                .catch(function() {
+                    contentDiv.innerHTML = '<div class="text-center py-4 text-danger">Gagal memuat detail pesanan</div>';
+                });
+        }
+        
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
         // Initialize when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
             attachStatusListeners();
+            
+            // Auto close alerts
+            var alerts = document.querySelectorAll('.alert-modern');
+            alerts.forEach(function(alert) {
+                setTimeout(function() {
+                    if (alert && alert.classList.contains('show')) {
+                        alert.style.opacity = '0';
+                        setTimeout(function() {
+                            alert.style.display = 'none';
+                        }, 300);
+                    }
+                }, 5000);
+            });
         });
     </script>
 </body>

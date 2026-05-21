@@ -17,25 +17,22 @@ public class HomeController {
     private final PromoRepository promoRepository;
     private final TestimoniRepository testimoniRepository;
     private final GaleriRepository galeriRepository;
-    private final ReservasiRepository reservasiRepository;
 
     public HomeController(MenuRepository menuRepository, 
                          PromoRepository promoRepository,
                          TestimoniRepository testimoniRepository,
-                         GaleriRepository galeriRepository,
-                         ReservasiRepository reservasiRepository) {
+                         GaleriRepository galeriRepository
+) {
         this.menuRepository = menuRepository;
         this.promoRepository = promoRepository;
         this.testimoniRepository = testimoniRepository;
         this.galeriRepository = galeriRepository;
-        this.reservasiRepository = reservasiRepository;
     }
 
     @GetMapping("/home")
     public String home(HttpSession session, Model model) {
         // Statistics
         model.addAttribute("menuCount", menuRepository.count());
-        model.addAttribute("reservasiCount", reservasiRepository.count());
         model.addAttribute("testimoniCount", testimoniRepository.count());
         model.addAttribute("promoCount", promoRepository.count());
         

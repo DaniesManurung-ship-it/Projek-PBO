@@ -4,7 +4,7 @@
 <head th:fragment="head(title)">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${title} + ' - Café Kopitiam33'">Café Kopitiam33</title>
+    <title th:text="${title} + ' - KL IT del'">KL IT del</title>
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -272,7 +272,7 @@
                     <i class="fas fa-bars"></i>
                 </button>
                 <a class="navbar-brand fw-bold" href="/">
-                    <i class="fas fa-mug-hot me-2"></i>Café Kopitiam33
+                    <i class="fas fa-box-open"></i> KL IT del
                 </a>
             </div>
             <div class="d-flex align-items-center gap-3">
@@ -308,7 +308,7 @@
 <div th:fragment="sidebar">
     <div class="sidebar-customer" id="sidebar">
         <div class="sidebar-header">
-            <i class="fas fa-coffee"></i>
+          <i class="fas fa-box-open"></i>
             <h6>Menu Navigasi</h6>
         </div>
         <nav class="nav flex-column">
@@ -317,9 +317,6 @@
             </a>
             <a class="nav-link" th:classappend="${activePage == 'menu'} ? 'active' : ''" href="/menu">
                 <i class="fas fa-utensils"></i> Menu
-            </a>
-            <a class="nav-link" th:classappend="${activePage == 'reservasi'} ? 'active' : ''" href="/reservasi">
-                <i class="fas fa-calendar-alt"></i> Reservasi
             </a>
             <a class="nav-link" th:classappend="${activePage == 'testimoni'} ? 'active' : ''" href="/testimoni">
                 <i class="fas fa-comment"></i> Testimoni
@@ -356,9 +353,6 @@
             </a>
             <a class="nav-link" th:classappend="${activePage == 'admin-galeri'} ? 'active' : ''" href="/admin/galeri">
                 <i class="fas fa-images"></i> Kelola Galeri
-            </a>
-            <a class="nav-link" th:classappend="${activePage == 'admin-reservasi'} ? 'active' : ''" href="/admin/reservasi">
-                <i class="fas fa-calendar-check"></i> Lihat Reservasi
             </a>
             <a class="nav-link" th:classappend="${activePage == 'admin-testimoni'} ? 'active' : ''" href="/admin/testimoni">
                 <i class="fas fa-star"></i> Kelola Testimoni

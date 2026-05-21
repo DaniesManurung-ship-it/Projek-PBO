@@ -62,10 +62,6 @@
                                         <small class="text-muted">Nama Customer</small>
                                         <p class="fw-bold mb-0" th:text="${pesanan.customerName}"></p>
                                     </div>
-                                    <div class="col-6">
-                                        <small class="text-muted">Meja</small>
-                                        <p class="fw-bold mb-0">Meja <span th:text="${pesanan.tableNumber}"></span></p>
-                                    </div>
                                 </div>
                                 
                                 <div class="mb-3">
@@ -280,10 +276,6 @@
                                 '<div class="col-6">' +
                                     '<small class="text-muted">Nama Customer</small>' +
                                     '<p class="fw-bold">' + escapeHtml(data.customerName) + '</p>' +
-                                '</div>' +
-                                '<div class="col-6">' +
-                                    '<small class="text-muted">Meja</small>' +
-                                    '<p class="fw-bold">Meja ' + data.tableNumber + '</p>' +
                                 '</div>' +
                             '</div>' +
                             '<div class="mb-3">' +

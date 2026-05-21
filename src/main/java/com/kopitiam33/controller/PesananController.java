@@ -30,7 +30,7 @@ public class PesananController {
     @PostMapping("/add")
     public String addPesanan(Authentication auth,
                              @RequestParam String customerName,
-                             @RequestParam Integer tableNumber,
+                                
                              @RequestParam(required = false) String notes,
                              @RequestParam String cartData,
                              RedirectAttributes redirectAttributes) {
@@ -54,7 +54,7 @@ public class PesananController {
             Pesanan pesanan = new Pesanan();
             pesanan.setUser(user);
             pesanan.setCustomerName(customerName);
-            pesanan.setTableNumber(tableNumber);
+         
             pesanan.setNotes(notes);
             pesanan.setItems(cartData);
             pesanan.setTotalPrice(totalPrice);
@@ -62,14 +62,15 @@ public class PesananController {
             
             pesananRepository.save(pesanan);
             
+            // Redirect ke halaman cart dengan parameter success
             redirectAttributes.addFlashAttribute("success", "Pesanan berhasil dikirim! Silakan tunggu konfirmasi.");
+            return "redirect:/cart?success=true";
             
         } catch (Exception e) {
             e.printStackTrace();
             redirectAttributes.addFlashAttribute("error", "Gagal mengirim pesanan: " + e.getMessage());
+            return "redirect:/cart?error=true";
         }
-        
-        return "redirect:/pesanan/riwayat";
     }
     
     // ==================== LIHAT RIWAYAT PESANAN CUSTOMER ====================
