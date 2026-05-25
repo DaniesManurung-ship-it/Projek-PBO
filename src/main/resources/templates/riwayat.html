@@ -1,105 +1,91 @@
 <!DOCTYPE html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
+
 <head th:replace="~{base :: head(title='Riwayat Pesanan')}"></head>
+
 <body>
+    <!-- Toast -->
     <div th:replace="~{base :: toast}"></div>
+
+    <!-- Navbar -->
     <div th:replace="~{base :: navbar}"></div>
-    
+
     <div class="d-flex" style="margin-top: 70px;">
+        <!-- Sidebar -->
         <div th:replace="~{base :: sidebar}"></div>
-        
+
+        <!-- Content Area -->
         <div class="content-area flex-grow-1 p-4">
+            <!-- Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="text-wood"><i class="fas fa-receipt me-2"></i>Riwayat Pesanan Saya</h2>
-                <a href="/menu" class="btn btn-sage">
-                    <i class="fas fa-utensils me-1"></i> Pesan Lagi
+                <h2 class="text-wood">
+                    <i class="fas fa-receipt me-2"></i>
+                    Riwayat Pesanan Saya
+                </h2>
+                <a href="/menu" class="btn btn-sage rounded-pill">
+                    <i class="fas fa-plus me-1"></i> Pesan Lagi
                 </a>
             </div>
-            
+
             <!-- Alert Messages -->
-            <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-4" role="alert">
                 <i class="fas fa-check-circle me-2"></i> <span th:text="${success}"></span>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="fas fa-exclamation-circle me-2"></i> <span th:text="${error}"></span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-            
-            <!-- Filter Status -->
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <select id="statusFilter" class="form-select" onchange="filterByStatus()">
-                        <option value="all">Semua Status</option>
-                        <option value="pending">⏳ Menunggu</option>
-                        <option value="confirmed">✅ Dikonfirmasi</option>
-                        <option value="completed">🎉 Selesai</option>
-                        <option value="cancelled">❌ Dibatalkan</option>
-                    </select>
+
+            <!-- Status Filter Tabs (Disamakan dengan Menu) -->
+            <div class="category-tabs-wrapper mb-4">
+                <div class="category-tabs">
+                    <button class="category-tab active" data-status="all" onclick="filterByStatus('all')">Semua</button>
+                    <button class="category-tab" data-status="pending" onclick="filterByStatus('pending')">⏳ Menunggu</button>
+                    <button class="category-tab" data-status="confirmed" onclick="filterByStatus('confirmed')">✅ Proses</button>
+                    <button class="category-tab" data-status="completed" onclick="filterByStatus('completed')">🎉 Selesai</button>
+                    <button class="category-tab" data-status="cancelled" onclick="filterByStatus('cancelled')">❌ Batal</button>
                 </div>
             </div>
-            
-            <!-- Pesanan Cards -->
-            <div th:if="${not #lists.isEmpty(pesanans)}">
-                <div class="row" id="pesananContainer">
-                    <div class="col-md-6 mb-4" th:each="pesanan : ${pesanans}" th:attr="data-status=${pesanan.status}">
-                        <div class="card h-100 shadow-sm border-0">
-                            <div class="card-header" th:classappend="${pesanan.status == 'pending'} ? 'bg-warning' : (${pesanan.status == 'confirmed'} ? 'bg-info' : (${pesanan.status == 'completed'} ? 'bg-success' : 'bg-danger'))" th:style="'color: white;'">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span>
-                                        <i class="fas fa-receipt me-1"></i>
-                                        Pesanan #<span th:text="${pesanan.id}"></span>
-                                    </span>
-                                    <span class="badge bg-light text-dark">
+
+            <!-- Order Cards Grid -->
+            <div th:if="${not #lists.isEmpty(pesanans)}" class="row" id="pesananContainer">
+                <div class="col-md-6 mb-4" th:each="pesanan : ${pesanans}" th:attr="data-status=${pesanan.status}">
+                    <div class="card h-100 shadow-sm border-0 order-card">
+                        <!-- Card Status Accent -->
+                        <div class="status-accent" th:classappend="${pesanan.status}"></div>
+                        
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h6 class="fw-bold mb-0">Pesanan #<span th:text="${pesanan.id}"></span></h6>
+                                    <small class="text-muted">
                                         <i class="far fa-calendar-alt me-1"></i>
-                                        <span th:text="${#temporals.format(pesanan.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
-                                    </span>
+                                        <span th:text="${#temporals.format(pesanan.createdAt, 'dd MMM yyyy, HH:mm')}"></span>
+                                    </small>
                                 </div>
+                                <span class="badge-status" th:classappend="${pesanan.status}">
+                                    <span th:if="${pesanan.status == 'pending'}">Menunggu</span>
+                                    <span th:if="${pesanan.status == 'confirmed'}">Diproses</span>
+                                    <span th:if="${pesanan.status == 'completed'}">Selesai</span>
+                                    <span th:if="${pesanan.status == 'cancelled'}">Dibatalkan</span>
+                                </span>
                             </div>
-                            <div class="card-body">
-                                <div class="row mb-3">
-                                    <div class="col-6">
-                                        <small class="text-muted">Nama Customer</small>
-                                        <p class="fw-bold mb-0" th:text="${pesanan.customerName}"></p>
-                                    </div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <small class="text-muted">Item Pesanan</small>
-                                    <div class="bg-light p-2 rounded" style="max-height: 150px; overflow-y: auto;" th:id="'items-' + ${pesanan.id}">
-                                        <div class="text-center text-muted small">Memuat item...</div>
-                                    </div>
-                                </div>
-                                
-                                <div th:if="${pesanan.notes != null and pesanan.notes != ''}" class="mb-3">
-                                    <small class="text-muted">Catatan</small>
-                                    <p class="small mb-0" th:text="${pesanan.notes}"></p>
-                                </div>
-                                
-                                <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <div>
-                                        <span class="badge" th:classappend="${pesanan.status == 'pending'} ? 'bg-warning' : (${pesanan.status == 'confirmed'} ? 'bg-info' : (${pesanan.status == 'completed'} ? 'bg-success' : 'bg-danger'))">
-                                            <span th:if="${pesanan.status == 'pending'}">⏳ Menunggu Konfirmasi</span>
-                                            <span th:if="${pesanan.status == 'confirmed'}">✅ Dikonfirmasi</span>
-                                            <span th:if="${pesanan.status == 'completed'}">🎉 Selesai</span>
-                                            <span th:if="${pesanan.status == 'cancelled'}">❌ Dibatalkan</span>
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <strong class="text-success fs-5">Rp <span th:text="${#numbers.formatInteger(pesanan.totalPrice, 0, 'COMMA')}"></span></strong>
-                                    </div>
-                                </div>
+
+                            <!-- Items Preview -->
+                            <div class="items-preview-box mb-3" th:id="'items-' + ${pesanan.id}">
+                                <div class="text-center py-2"><small class="text-muted">Memuat item...</small></div>
                             </div>
-                            <div class="card-footer bg-transparent">
-                                <div class="d-flex justify-content-between gap-2">
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" th:onclick="'showDetail(' + ${pesanan.id} + ')'">
-                                        <i class="fas fa-eye me-1"></i> Detail
+
+                            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                                <div>
+                                    <small class="text-muted d-block" style="font-size: 10px; text-transform: uppercase;">Total Pembayaran</small>
+                                    <span class="price-value">Rp <span th:text="${#numbers.formatInteger(pesanan.totalPrice, 0, 'COMMA')}"></span></span>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-light rounded-pill px-3" th:onclick="'showDetail(' + ${pesanan.id} + ')'">
+                                        <i class="fas fa-eye"></i> Detail
                                     </button>
-                                    <a th:if="${pesanan.status == 'pending'}" th:href="@{/pesanan/batal/{id}(id=${pesanan.id})}" class="btn btn-sm btn-outline-danger" th:onclick="'return confirm(\'Yakin ingin membatalkan pesanan ini?\')'">
-                                        <i class="fas fa-times me-1"></i> Batalkan
-                                    </a>
-                                    <a th:if="${pesanan.status == 'completed'}" href="/menu" class="btn btn-sm btn-sage">
-                                        <i class="fas fa-redo me-1"></i> Pesan Lagi
+                                    <a th:if="${pesanan.status == 'pending'}" th:href="@{/pesanan/batal/{id}(id=${pesanan.id})}" 
+                                       class="btn btn-sm btn-outline-danger rounded-pill px-3" 
+                                       onclick="return confirm('Yakin ingin membatalkan pesanan ini?')">
+                                        Batal
                                     </a>
                                 </div>
                             </div>
@@ -107,226 +93,167 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Empty State -->
             <div th:if="${#lists.isEmpty(pesanans)}" class="text-center py-5">
-                <i class="fas fa-receipt fa-4x text-muted mb-3 opacity-50"></i>
-                <h4 class="text-muted">Belum Ada Pesanan</h4>
-                <p class="text-muted">Anda belum memiliki riwayat pesanan. Yuk pesan menu favorit Anda!</p>
-                <a href="/menu" class="btn btn-sage mt-2">
-                    <i class="fas fa-utensils me-1"></i> Mulai Pesan
-                </a>
+                <div class="empty-icon-box mb-3">
+                    <i class="fas fa-receipt fa-3x text-muted"></i>
+                </div>
+                <h5 class="text-wood fw-bold">Belum Ada Pesanan</h5>
+                <p class="text-muted small">Yuk, mulai jelajahi menu lezat KL IT del sekarang!</p>
+                <a href="/menu" class="btn btn-sage rounded-pill px-4">Pesan Sekarang</a>
             </div>
         </div>
     </div>
-    
-    <!-- Modal Detail Pesanan -->
+
+    <!-- Modal Detail (Style Konsisten) -->
     <div class="modal fade" id="detailModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header text-white" style="background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);">
-                    <h5 class="modal-title"><i class="fas fa-receipt me-2"></i>Detail Pesanan</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-wood">Detail Transaksi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body" id="detailContent">
-                    <div class="text-center py-4">
-                        <div class="spinner-border text-success" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <p class="mt-2">Memuat detail pesanan...</p>
-                    </div>
+                    <!-- Content Loaded by JS -->
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Tutup</button>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <div th:replace="~{base :: scripts}"></div>
-    
+
     <style>
-        .card-header {
-            border-bottom: none;
+        /* Desain Tab Filter */
+        .category-tabs-wrapper { background: white; border-radius: 16px; padding: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .category-tabs { display: flex; gap: 8px; overflow-x: auto; padding: 5px; scrollbar-width: none; }
+        .category-tab { flex: 1; min-width: 110px; padding: 10px; border: none; background: #f8f9fa; border-radius: 12px; font-weight: 600; color: #6c757d; transition: 0.3s; font-size: 13px; }
+        .category-tab.active { background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%); color: white; box-shadow: 0 4px 12px rgba(107,138,107,0.3); }
+
+        /* Order Card Style */
+        .order-card {
+            border-radius: 20px;
+            overflow: hidden;
+            transition: 0.3s;
+            position: relative;
         }
-        .badge {
-            font-size: 0.75rem;
-            padding: 5px 10px;
-        }
-        .card-footer {
-            border-top: 1px solid rgba(0,0,0,0.05);
-        }
+        .order-card:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.1) !important; }
+        
+        .status-accent { height: 4px; width: 100%; }
+        .status-accent.pending { background: #f1c40f; }
+        .status-accent.confirmed { background: #3498db; }
+        .status-accent.completed { background: #8BA888; }
+        .status-accent.cancelled { background: #e74c3c; }
+
+        .badge-status { font-size: 11px; padding: 4px 12px; border-radius: 20px; font-weight: bold; }
+        .badge-status.pending { background: #fef9e7; color: #f1c40f; }
+        .badge-status.confirmed { background: #ebf5fb; color: #3498db; }
+        .badge-status.completed { background: #f4f9f4; color: #6B8A6B; }
+        .badge-status.cancelled { background: #fdedec; color: #e74c3c; }
+
+        .items-preview-box { background: #f8f9fa; border-radius: 12px; padding: 12px; }
+        .price-value { font-weight: bold; color: #6B8A6B; font-size: 18px; }
+
+        .empty-icon-box { width: 80px; height: 80px; background: #f8f9fa; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+        
+        .text-wood { color: #5A3E2B; }
+        .btn-sage { background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%); color: white; border: none; transition: 0.3s; }
+        .btn-sage:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(107,138,107,0.3); color: white; }
+        .content-area { background-color: #f8f9fa; min-height: 100vh; }
     </style>
-    
-    <script>
-        // Load items for each order
+
+    <script th:inline="javascript">
         document.addEventListener('DOMContentLoaded', function() {
             loadAllItems();
         });
-        
+
         function loadAllItems() {
-            var pesananIds = document.querySelectorAll('[id^="items-"]');
-            for (var i = 0; i < pesananIds.length; i++) {
-                var container = pesananIds[i];
-                var id = container.id.replace('items-', '');
+            const containers = document.querySelectorAll('[id^="items-"]');
+            containers.forEach(container => {
+                const id = container.id.replace('items-', '');
                 loadOrderItems(id);
-            }
+            });
         }
-        
+
         function loadOrderItems(orderId) {
             fetch('/pesanan/detail/' + orderId)
-                .then(function(response) { return response.json(); })
-                .then(function(data) {
-                    var container = document.getElementById('items-' + orderId);
-                    if (container && data.items) {
-                        try {
-                            var items = JSON.parse(data.items);
-                            var html = '<div class="small">';
-                            for (var i = 0; i < items.length; i++) {
-                                var item = items[i];
-                                var subtotal = item.price * item.quantity;
-                                html += '<div class="d-flex justify-content-between mb-1">' +
-                                    '<span>' + escapeHtml(item.name) + ' x ' + item.quantity + '</span>' +
-                                    '<span class="text-muted">Rp ' + formatNumber(subtotal) + '</span>' +
-                                    '</div>';
-                            }
-                            html += '</div>';
-                            container.innerHTML = html;
-                        } catch(e) {
-                            container.innerHTML = '<div class="text-center text-muted small">Tidak dapat memuat item</div>';
-                        }
-                    }
-                })
-                .catch(function() {
-                    var container = document.getElementById('items-' + orderId);
-                    if (container) {
-                        container.innerHTML = '<div class="text-center text-muted small">Gagal memuat item</div>';
-                    }
-                });
-        }
-        
-        function showDetail(id) {
-            var modal = new bootstrap.Modal(document.getElementById('detailModal'));
-            var contentDiv = document.getElementById('detailContent');
-            
-            contentDiv.innerHTML = '<div class="text-center py-4">' +
-                '<div class="spinner-border text-success" role="status"></div>' +
-                '<p class="mt-2">Memuat detail pesanan...</p>' +
-                '</div>';
-            
-            modal.show();
-            
-            fetch('/pesanan/detail/' + id)
-                .then(function(response) { return response.json(); })
-                .then(function(data) {
-                    var itemsHtml = '';
-                    var total = 0;
-                    
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.getElementById('items-' + orderId);
                     if (data.items) {
-                        try {
-                            var items = JSON.parse(data.items);
-                            for (var i = 0; i < items.length; i++) {
-                                var item = items[i];
-                                var subtotal = item.price * item.quantity;
-                                total += subtotal;
-                                itemsHtml += '<div class="d-flex justify-content-between mb-2 border-bottom pb-2">' +
-                                    '<div><strong>' + escapeHtml(item.name) + '</strong><br><small class="text-muted">Harga: Rp ' + formatNumber(item.price) + ' x ' + item.quantity + '</small></div>' +
-                                    '<div class="fw-bold">Rp ' + formatNumber(subtotal) + '</div>' +
-                                    '</div>';
-                            }
-                        } catch(e) {
-                            itemsHtml = '<p class="text-muted">Tidak dapat memuat item</p>';
+                        const items = JSON.parse(data.items);
+                        let html = '<div style="font-size: 12px;">';
+                        items.slice(0, 2).forEach(item => {
+                            html += `<div class="d-flex justify-content-between mb-1">
+                                        <span>${item.name} x${item.quantity}</span>
+                                        <span class="text-muted">Rp ${formatNumber(item.price * item.quantity)}</span>
+                                     </div>`;
+                        });
+                        if (items.length > 2) {
+                            html += `<div class="text-center text-muted mt-1" style="font-size: 10px;">+ ${items.length - 2} item lainnya</div>`;
                         }
+                        html += '</div>';
+                        container.innerHTML = html;
                     }
-                    
-                    var statusText = '';
-                    var statusClass = '';
-                    if (data.status === 'pending') {
-                        statusText = '⏳ Menunggu Konfirmasi';
-                        statusClass = 'bg-warning';
-                    } else if (data.status === 'confirmed') {
-                        statusText = '✅ Dikonfirmasi';
-                        statusClass = 'bg-info';
-                    } else if (data.status === 'completed') {
-                        statusText = '🎉 Selesai';
-                        statusClass = 'bg-success';
-                    } else if (data.status === 'cancelled') {
-                        statusText = '❌ Dibatalkan';
-                        statusClass = 'bg-danger';
-                    }
-                    
-                    var notesHtml = '';
-                    if (data.notes && data.notes !== '') {
-                        notesHtml = '<small class="text-muted">Catatan</small><p class="small bg-light p-2 rounded">' + escapeHtml(data.notes) + '</p>';
-                    }
-                    
-                    contentDiv.innerHTML = 
-                        '<div class="mb-3">' +
-                            '<div class="row">' +
-                                '<div class="col-6">' +
-                                    '<small class="text-muted">Pesanan #</small>' +
-                                    '<p class="fw-bold">' + data.id + '</p>' +
-                                '</div>' +
-                                '<div class="col-6">' +
-                                    '<small class="text-muted">Tanggal</small>' +
-                                    '<p class="fw-bold">' + new Date(data.createdAt).toLocaleString('id-ID') + '</p>' +
-                                '</div>' +
-                            '</div>' +
-                            '<div class="row">' +
-                                '<div class="col-6">' +
-                                    '<small class="text-muted">Nama Customer</small>' +
-                                    '<p class="fw-bold">' + escapeHtml(data.customerName) + '</p>' +
-                                '</div>' +
-                            '</div>' +
-                            '<div class="mb-3">' +
-                                '<small class="text-muted">Status</small>' +
-                                '<div><span class="badge ' + statusClass + '">' + statusText + '</span></div>' +
-                            '</div>' +
-                            '<div class="mb-3">' +
-                                '<small class="text-muted">Detail Item</small>' +
-                                '<div class="bg-light p-3 rounded mt-1">' +
-                                    itemsHtml +
-                                    '<div class="d-flex justify-content-between mt-3 pt-2 border-top">' +
-                                        '<strong>Total</strong>' +
-                                        '<strong class="text-success">Rp ' + formatNumber(total) + '</strong>' +
-                                    '</div>' +
-                                '</div>' +
-                            '</div>' +
-                            notesHtml +
-                        '</div>';
-                })
-                .catch(function() {
-                    contentDiv.innerHTML = '<div class="text-center py-4 text-danger">Gagal memuat detail pesanan</div>';
+                }).catch(() => {
+                    document.getElementById('items-' + orderId).innerHTML = '<small class="text-danger">Gagal memuat</small>';
                 });
         }
-        
-        function filterByStatus() {
-            var filter = document.getElementById('statusFilter').value;
-            var cards = document.querySelectorAll('#pesananContainer > div');
-            for (var i = 0; i < cards.length; i++) {
-                var card = cards[i];
-                var status = card.getAttribute('data-status');
-                if (filter === 'all' || status === filter) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            }
+
+        function filterByStatus(status) {
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.getAttribute('data-status') === status);
+            });
+            
+            document.querySelectorAll('#pesananContainer > div').forEach(card => {
+                const cardStatus = card.getAttribute('data-status');
+                card.style.display = (status === 'all' || cardStatus === status) ? 'block' : 'none';
+            });
         }
-        
+
+        function showDetail(id) {
+            const modal = new bootstrap.Modal(document.getElementById('detailModal'));
+            const contentDiv = document.getElementById('detailContent');
+            contentDiv.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-success"></div></div>';
+            modal.show();
+
+            fetch('/pesanan/detail/' + id)
+                .then(res => res.json())
+                .then(data => {
+                    const items = JSON.parse(data.items);
+                    let itemsHtml = '';
+                    items.forEach(item => {
+                        itemsHtml += `<div class="d-flex justify-content-between mb-2">
+                            <div><span class="fw-bold">${item.name}</span><br><small>${item.quantity} x Rp ${formatNumber(item.price)}</small></div>
+                            <div class="fw-bold">Rp ${formatNumber(item.price * item.quantity)}</div>
+                        </div>`;
+                    });
+
+                    contentDiv.innerHTML = `
+                        <div class="p-2">
+                            <div class="row mb-3 bg-light p-3 rounded-4">
+                                <div class="col-6"><small class="text-muted">ID Pesanan</small><br>#${data.id}</div>
+                                <div class="col-6"><small class="text-muted">Status</small><br><span class="fw-bold text-success">${data.status.toUpperCase()}</span></div>
+                            </div>
+                            <h6 class="fw-bold mb-3">Rincian Item</h6>
+                            <div class="border-bottom pb-2 mb-3">${itemsHtml}</div>
+                            <div class="d-flex justify-content-between mb-4">
+                                <h5 class="fw-bold">Total</h5>
+                                <h5 class="fw-bold text-success">Rp ${formatNumber(data.totalPrice)}</h5>
+                            </div>
+                            ${data.notes ? `<div class="alert alert-warning border-0 small"><strong>Catatan:</strong> ${data.notes}</div>` : ''}
+                        </div>
+                    `;
+                });
+        }
+
         function formatNumber(num) {
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
-        
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
     </script>
 </body>
+
 </html>

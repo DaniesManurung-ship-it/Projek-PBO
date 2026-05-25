@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{base :: head(title='Beranda')}"></head>
+<head th:replace="~{base :: head(title='Beranda - KL IT del')}"></head>
 <body>
     <div th:replace="~{base :: toast}"></div>
     <div th:replace="~{base :: navbar}"></div>
@@ -8,116 +8,146 @@
     <div class="d-flex" style="margin-top: 70px;">
         <div th:replace="~{base :: sidebar}"></div>
         
-        <div class="content-area flex-grow-1 p-4">
-            <!-- Hero Section -->
-            <div style="background: linear-gradient(135deg, #8BA888, #A67B5B); border-radius: 24px; padding: 40px; margin-bottom: 30px; text-align: center; color: white;">
-                <h1 class="display-4 fw-bold">Selamat Datang di KL IT del</h1>
-                <p class="lead mb-3">Nikmati pengalaman kuliner autentik dengan cita rasa Indonesia</p>
-                <a href="/menu" class="btn btn-light btn-lg rounded-pill px-4 mt-2">
-                    <i class="fas fa-utensils me-2"></i>Lihat Menu
-                </a>
-            </div>
+        <div class="content-area flex-grow-1 p-0"> 
             
-            <!-- Stats -->
-            <div class="row g-4 mb-5">
-                <div class="col-md-3 col-6">
-                    <div class="bg-white p-4 text-center rounded-4 shadow-sm">
-                        <i class="fas fa-utensils fa-2x" style="color: #8BA888;"></i>
-                        <h3 class="mt-2" th:text="${menuCount}">0</h3>
-                        <small class="text-muted">Menu Tersedia</small>
+            <!-- SECTION 1: Carousel (Gambar Bergerak dengan Teks Baru) -->
+            <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
+                <div class="carousel-indicators">
+                    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
+                    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
+                    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"></button>
+                </div>
+                <div class="carousel-inner">
+                    <!-- Slide 1: Fokus ke Gorengan -->
+                    <div class="carousel-item active" data-bs-interval="4000">
+                        <div class="overlay"></div>
+                        <img src="/images/slider1.jpg" class="d-block w-100 slider-img" onerror="this.src='https://images.unsplash.com/photo-1573537805874-46969695029e?auto=format&fit=crop&w=1200&q=80'">
+                        <div class="carousel-caption d-none d-md-block">
+                            <h1 class="display-4 fw-bold">Gorengan Hangat & Nagih</h1>
+                            <p class="lead">Nikmati Tahu, Tempe, dan Tela-tela krispi yang digoreng dadakan setiap hari.</p>
+                            <a href="/menu" class="btn btn-sage rounded-pill px-4 py-2 mt-2">Lihat Menu</a>
+                        </div>
+                    </div>
+                    <!-- Slide 2: Fokus ke Lokasi Kampus -->
+                    <div class="carousel-item" data-bs-interval="4000">
+                        <div class="overlay"></div>
+                        <img src="/images/slider2.jpg" class="d-block w-100 slider-img" onerror="this.src='https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1200&q=80'">
+                        <div class="carousel-caption">
+                            <h1 class="display-4 fw-bold">Tempat Nongkrong Favorit</h1>
+                            <p class="lead">Satu-satunya tempat paling asik buat rehat sejenak di tengah padatnya jadwal IT del.</p>
+                        </div>
+                    </div>
+                    <!-- Slide 3: Fokus ke Kopi & Tugas -->
+                    <div class="carousel-item" data-bs-interval="4000">
+                        <div class="overlay"></div>
+                        <img src="/images/slider3.jpg" class="d-block w-100 slider-img" onerror="this.src='https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=80'">
+                        <div class="carousel-caption">
+                            <h1 class="display-4 fw-bold">Kopi Hangat Teman Diskusi</h1>
+                            <p class="lead">Seruput kopi pilihan untuk energi tambahan saat kerja kelompok atau kerjakan proyek.</p>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-3 col-6">
-                    <div class="bg-white p-4 text-center rounded-4 shadow-sm">
-                        <i class="fas fa-star fa-2x" style="color: #8BA888;"></i>
-                        <h3 class="mt-2" th:text="${testimoniCount}">0</h3>
-                        <small class="text-muted">Testimoni</small>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6">
-                    <div class="bg-white p-4 text-center rounded-4 shadow-sm">
-                        <i class="fas fa-tags fa-2x" style="color: #8BA888;"></i>
-                        <h3 class="mt-2" th:text="${promoCount}">0</h3>
-                        <small class="text-muted">Promo Aktif</small>
-                    </div>
-                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                </button>
             </div>
-            
-            <!-- Promo -->
-            <div class="card shadow-sm mb-4 border-0">
-                <div class="card-header" style="background: linear-gradient(135deg, #8BA888, #6B8A6B); color: white;">
-                    <h5 class="mb-0"><i class="fas fa-tags me-2"></i>Promo Spesial</h5>
-                </div>
-                <div class="card-body bg-white">
-                    <div class="row" th:if="${not #lists.isEmpty(activePromos)}">
-                        <div class="col-md-4 mb-3" th:each="promo : ${activePromos}">
-                            <div class="card h-100">
-                                <div class="position-relative">
-                                    <img th:src="${promo.image != null ? promo.image : '/uploads/default.jpg'}" class="card-img-top" style="height: 150px; object-fit: cover;">
-                                    <span class="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 rounded m-2">-<span th:text="${promo.discount}"></span>%</span>
-                                </div>
-                                <div class="card-body">
-                                    <h6 th:text="${promo.name}"></h6>
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-muted text-decoration-line-through">Rp <span th:text="${#numbers.formatInteger(promo.originalPrice, 0, 'COMMA')}"></span></span>
-                                        <span class="text-danger fw-bold">Rp <span th:text="${#numbers.formatInteger(promo.originalPrice - (promo.originalPrice * promo.discount / 100), 0, 'COMMA')}"></span></span>
-                                    </div>
-                                </div>
+
+            <div class="p-4">
+                <!-- SECTION 2: Stats (Statistik) -->
+                <div class="row g-4 mb-5">
+                    <div class="col-md-4 col-12">
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-utensils"></i></div>
+                            <div class="stat-info">
+                                <h3 th:text="${menuCount}">0</h3>
+                                <p>Varian Cemilan</p>
                             </div>
                         </div>
                     </div>
-                    <div th:if="${#lists.isEmpty(activePromos)}" class="text-center py-5 text-muted">
-                        Belum ada promo aktif
+                    <div class="col-md-4 col-12">
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-smile-beam"></i></div>
+                            <div class="stat-info">
+                                <h3 th:text="${testimoniCount}">0</h3>
+                                <p>Mahasiswa Puas</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-12">
+                        <div class="stat-card border-accent">
+                            <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                            <div class="stat-info">
+                                <h3>08:00 - 20:00</h3>
+                                <p>Jam Operasional</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Testimoni -->
-            <div class="card shadow-sm mb-4 border-0">
-                <div class="card-header" style="background: linear-gradient(135deg, #8BA888, #6B8A6B); color: white;">
-                    <h5 class="mb-0"><i class="fas fa-star me-2"></i>Testimoni Customer</h5>
+
+                <!-- SECTION 3: Why Choose Us (Fitur Utama Disesuaikan) -->
+                <div class="text-center mb-5 mt-5">
+                    <h2 class="text-wood fw-bold">Kenapa Harus Nyemil di KL IT del?</h2>
+                    <div class="underline-center"></div>
+                    <p class="text-muted">Tempat terbaik untuk mengisi energi di sela jadwal kuliah yang padat.</p>
                 </div>
-                <div class="card-body bg-white">
-                    <div class="row" th:if="${not #lists.isEmpty(testimonials)}">
-                        <div class="col-md-6 mb-3" th:each="testimoni : ${testimonials}">
-                            <div class="border rounded-3 p-3 h-100 bg-white">
-                                <div class="d-flex align-items-center gap-2 mb-2">
-                                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: linear-gradient(135deg, #8BA888, #A67B5B); color: white;">
-                                        <span th:text="${#strings.substring(testimoni.name, 0, 1)}"></span>
-                                    </div>
+
+                <div class="row g-4 text-center">
+                    <!-- Fitur 1: Kualitas Gorengan -->
+                    <div class="col-md-4">
+                        <div class="feature-box">
+                            <div class="feature-icon"><i class="fas fa-fire-alt"></i></div>
+                            <h5 class="fw-bold">Selalu Hangat & Krispi</h5>
+                            <p class="text-muted small">Tahu, tempe, tela-tela, hingga kentang kami digoreng dadakan. Nikmati sensasi krispi maksimal yang bikin nagih di setiap gigitan.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Fitur 2: Harga Mahasiswa -->
+                    <div class="col-md-4">
+                        <div class="feature-box">
+                            <div class="feature-icon"><i class="fas fa-wallet"></i></div>
+                            <h5 class="fw-bold">Harga Kantong Mahasiswa</h5>
+                            <p class="text-muted small">Makan enak nggak harus mahal! Semua gorengan dan minuman kami dibanderol dengan harga yang sangat ramah bagi dompet mahasiswa IT del.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Fitur 3: Suasana Diskusi -->
+                    <div class="col-md-4">
+                        <div class="feature-box">
+                            <div class="feature-icon"><i class="fas fa-coffee"></i></div>
+                            <h5 class="fw-bold">Teman Ngobrol & Diskusi</h5>
+                            <p class="text-muted small">Tempat paling asik buat istirahat sejenak. Temani waktu diskusimu dengan kopi hangat dan sepiring gorengan bersama teman seperjuangan.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 4: Testimoni -->
+                <div class="mt-5 pt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="text-wood fw-bold"><i class="fas fa-comment-dots me-2"></i>Apa Kata Mahasiswa?</h4>
+                        <a href="/testimoni" class="btn btn-sm btn-outline-sage rounded-pill">Lihat Semua</a>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6" th:each="testimoni : ${testimonials}">
+                            <div class="testimonial-bubble">
+                                <div class="d-flex align-items-center gap-3 mb-2">
+                                    <div class="avatar-sm" th:text="${#strings.substring(testimoni.name, 0, 1)}"></div>
                                     <div>
-                                        <strong th:text="${testimoni.name}"></strong>
-                                        <div class="text-warning small">
-                                            <span th:each="i,stat : ${#numbers.sequence(1, testimoni.rating)}">★</span>
-                                            <span th:each="i,stat : ${#numbers.sequence(testimoni.rating+1, 5)}">☆</span>
+                                        <h6 class="mb-0 fw-bold" th:text="${testimoni.name}"></h6>
+                                        <div class="text-warning" style="font-size: 12px;">
+                                            <span th:each="i : ${#numbers.sequence(1, testimoni.rating)}">★</span>
                                         </div>
                                     </div>
                                 </div>
-                                <p class="text-muted small mb-0" th:text="${testimoni.message}"></p>
+                                <p class="text-muted mb-0 small" th:text="${testimoni.message}"></p>
                             </div>
                         </div>
                     </div>
-                    <div th:if="${#lists.isEmpty(testimonials)}" class="text-center py-5 text-muted">
-                        Belum ada testimoni
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Galeri -->
-            <div class="card shadow-sm border-0">
-                <div class="card-header" style="background: linear-gradient(135deg, #8BA888, #6B8A6B); color: white;">
-                    <h5 class="mb-0"><i class="fas fa-images me-2"></i>Galeri Foto</h5>
-                </div>
-                <div class="card-body bg-white">
-                    <div class="row" th:if="${not #lists.isEmpty(galleries)}">
-                        <div class="col-lg-3 col-md-4 col-6 mb-3" th:each="gallery : ${galleries}">
-                            <div class="rounded-3 overflow-hidden">
-                                <img th:src="${gallery.image != null ? gallery.image : '/uploads/default.jpg'}" class="w-100" style="height: 120px; object-fit: cover;">
-                            </div>
-                        </div>
-                    </div>
-                    <div th:if="${#lists.isEmpty(galleries)}" class="text-center py-5 text-muted">
-                        Belum ada galeri
+                    <!-- Tampilan jika testimoni kosong -->
+                    <div th:if="${#lists.isEmpty(testimonials)}" class="text-center py-4 text-muted small">
+                        Belum ada ulasan terbaru.
                     </div>
                 </div>
             </div>
@@ -125,5 +155,125 @@
     </div>
     
     <div th:replace="~{base :: scripts}"></div>
+
+    <style>
+        /* Slider/Carousel Style */
+        .slider-img {
+            height: 480px;
+            object-fit: cover;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 1;
+        }
+
+        .carousel-caption {
+            z-index: 2;
+            bottom: 25%;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+        }
+
+        /* Stat Card */
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            transition: 0.3s;
+            border: 1px solid #f0f0f0;
+        }
+
+        .stat-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
+        .stat-icon {
+            width: 60px; height: 60px;
+            background: #f0f4f0;
+            color: #8BA888;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-info h3 { margin: 0; font-weight: bold; color: #5A3E2B; }
+        .stat-info p { margin: 0; color: #888; font-size: 14px; }
+
+        /* Feature Box */
+        .feature-box {
+            padding: 30px;
+            background: #fff;
+            border-radius: 20px;
+            height: 100%;
+            transition: 0.3s;
+            border: 1px solid #eee;
+        }
+
+        .feature-box:hover { 
+            background: #fff; 
+            box-shadow: 0 12px 30px rgba(0,0,0,0.06); 
+            transform: translateY(-5px);
+            border-color: #8BA888;
+        }
+        
+        .feature-icon {
+            font-size: 45px;
+            color: #8BA888;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 5px 5px rgba(139, 168, 136, 0.2));
+        }
+
+        .underline-center {
+            width: 60px; height: 4px;
+            background: #8BA888;
+            margin: 10px auto;
+            border-radius: 2px;
+        }
+
+        /* Testimonial Bubble */
+        .testimonial-bubble {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 5px solid #8BA888;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+            height: 100%;
+        }
+
+        .avatar-sm {
+            width: 40px; height: 40px;
+            background: #8BA888;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Utils */
+        .btn-sage { background: #6B8A6B; color: white; border: none; }
+        .btn-sage:hover { background: #5A7A5A; color: white; transform: scale(1.05); }
+        .btn-outline-sage { border: 1px solid #6B8A6B; color: #6B8A6B; background: transparent; }
+        .btn-outline-sage:hover { background: #6B8A6B; color: white; }
+        .text-wood { color: #5A3E2B; }
+        .content-area { background-color: #fcfdfc; }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var myCarousel = document.querySelector('#heroCarousel')
+            var carousel = new bootstrap.Carousel(myCarousel, {
+                interval: 4000,
+                wrap: true
+            });
+        });
+    </script>
 </body>
 </html>

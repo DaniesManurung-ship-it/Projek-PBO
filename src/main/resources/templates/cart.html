@@ -12,54 +12,41 @@
         <div th:replace="~{base :: sidebar}"></div>
 
         <div class="content-area flex-grow-1 p-4">
+            <!-- Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="text-wood">
                     <i class="fas fa-shopping-cart me-2"></i>
                     Keranjang Belanja
                 </h2>
-                <a href="/menu" class="btn btn-sage">
+                <a href="/menu" class="btn btn-sage rounded-pill px-4">
                     <i class="fas fa-arrow-left me-1"></i>
                     Kembali ke Menu
                 </a>
             </div>
 
-            <!-- Alert Sukses -->
-            <div id="successAlert" class="alert alert-success alert-dismissible fade show" style="display: none;">
-                <i class="fas fa-check-circle me-2"></i>
-                <span id="successMessage"></span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
+            <!-- Keranjang Card -->
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="custom-thead text-white">
                                 <tr>
-                                    <th>Gambar</th>
+                                    <th class="ps-4">Gambar</th>
                                     <th>Menu</th>
                                     <th>Harga</th>
-                                    <th>Jumlah</th>
+                                    <th class="text-center">Jumlah</th>
                                     <th>Subtotal</th>
-                                    <th>Aksi</th>
+                                    <th class="text-center pe-4">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="cartItems">
-                                <tr>
-                                    <td colspan="6" class="text-center py-5 text-muted">
-                                        <i class="fas fa-shopping-cart fa-3x mb-3 opacity-50"></i>
-                                        <p class="mb-2">Keranjang masih kosong</p>
-                                        <a href="/menu" class="btn btn-sage btn-sm">
-                                            <i class="fas fa-utensils me-1"></i> Mulai Belanja
-                                        </a>
-                                    </td>
-                                </tr>
+                                <!-- Items will be loaded by JS -->
                             </tbody>
                             <tfoot id="cartFooter" style="display: none;">
-                                <tr class="table-light">
-                                    <td colspan="4" class="text-end fw-bold">Total: </td>
-                                    <td colspan="2">
-                                        <strong class="text-success fs-4" id="cartTotal">Rp 0</strong>
+                                <tr class="bg-light">
+                                    <td colspan="4" class="text-end fw-bold py-3">Total Pembayaran:</td>
+                                    <td colspan="2" class="ps-3 py-3">
+                                        <strong class="text-sage fs-4" id="cartTotal">Rp 0</strong>
                                     </td>
                                 </tr>
                             </tfoot>
@@ -68,9 +55,10 @@
                 </div>
             </div>
 
+            <!-- Action Section -->
             <div class="mt-4 text-end" id="checkoutSection" style="display: none;">
-                <button type="button" class="btn btn-sage btn-lg" onclick="proceedToCheckout()">
-                    <i class="fas fa-check me-2"></i> Konfirmasi Pesanan
+                <button type="button" class="btn btn-sage btn-lg rounded-pill px-5 shadow" onclick="proceedToCheckout()">
+                    <i class="fas fa-check-circle me-2"></i> Konfirmasi Pesanan
                 </button>
             </div>
         </div>
@@ -78,44 +66,45 @@
 
     <!-- CHECKOUT MODAL -->
     <div class="modal fade" id="checkoutModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header text-white" style="background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);">
-                    <h5 class="modal-title">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 overflow-hidden">
+                <div class="modal-header text-white border-0" style="background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);">
+                    <h5 class="modal-title fw-bold">
                         <i class="fas fa-clipboard-list me-2"></i>
                         Konfirmasi Pesanan
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <form id="checkoutForm" th:action="@{/pesanan/add}" method="post">
-                    <div class="modal-body">
+                    <div class="modal-body p-4">
                         <input type="hidden" name="cartData" id="cartDataInput">
                         
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Nama Lengkap <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="customerName" id="customerName" required>
+                            <label class="form-label small fw-bold text-muted">Nama Lengkap <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control rounded-3" name="customerName" id="customerName" placeholder="Masukkan nama pemesan" required>
                         </div>
                         
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Catatan (opsional)</label>
-                            <textarea class="form-control" name="notes" id="notes" rows="2" placeholder="Contoh: Tidak pedas, extra sambal, dll"></textarea>
+                            <label class="form-label small fw-bold text-muted">Catatan Pesanan (Opsional)</label>
+                            <textarea class="form-control rounded-3" name="notes" id="notes" rows="2" placeholder="Contoh: Goreng agak garing, kopi jangan manis..."></textarea>
                         </div>
                         
-                        <hr>
-                        
-                        <div class="mb-3">
-                            <h6 class="fw-bold"><i class="fas fa-receipt me-1"></i>Ringkasan Pesanan:</h6>
-                            <div id="orderSummary" class="bg-light p-3 rounded" style="max-height: 200px; overflow-y: auto;">
-                                <p class="text-muted text-center mb-0">Belum ada item</p>
+                        <div class="order-summary-box rounded-4 p-3 bg-light mt-4">
+                            <h6 class="fw-bold text-wood mb-3 small text-uppercase tracking-wider">Ringkasan Pesanan</h6>
+                            <div id="orderSummary" class="small border-bottom pb-2 mb-2" style="max-height: 150px; overflow-y: auto;">
+                                <!-- Summary JS -->
                             </div>
-                            <div class="mt-2 text-end">
-                                <strong>Total: <span id="orderTotal" class="text-success fs-5">Rp 0</span></strong>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold">Total Akhir</span>
+                                <span id="orderTotal" class="text-sage fw-bold fs-5">Rp 0</span>
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-sage"><i class="fas fa-check me-1"></i>Pesan Sekarang</button>
+                    <div class="modal-footer border-0 p-4 pt-0">
+                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-sage rounded-pill px-4">
+                            <i class="fas fa-paper-plane me-1"></i> Pesan Sekarang
+                        </button>
                     </div>
                 </form>
             </div>
@@ -125,34 +114,71 @@
     <div th:replace="~{base :: scripts}"></div>
 
     <style>
-        .text-wood {
-            color: #5A3E2B;
+        .custom-thead {
+            background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);
+        }
+        .custom-thead th {
             font-weight: 600;
+            padding: 15px;
+            border: none;
         }
-        .content-area {
-            background: linear-gradient(135deg, #f8f9fa 0%, #f0f2f5 100%);
-            min-height: calc(100vh - 70px);
-        }
+        .text-wood { color: #5A3E2B; }
+        .text-sage { color: #6B8A6B; }
+        
         .btn-sage {
             background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);
             color: white;
             border: none;
+            transition: 0.3s;
         }
         .btn-sage:hover {
-            background: linear-gradient(135deg, #6B8A6B 0%, #5A7A5A 100%);
-            color: white;
             transform: translateY(-2px);
-        }
-        .table-light th {
-            background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);
+            box-shadow: 0 5px 15px rgba(107,138,107,0.4);
             color: white;
         }
+
         .cart-img {
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             object-fit: cover;
-            border-radius: 8px;
+            border-radius: 12px;
+            border: 2px solid #f8f9fa;
         }
+
+        .qty-control {
+            display: inline-flex;
+            align-items: center;
+            background: #f8f9fa;
+            border-radius: 30px;
+            padding: 2px;
+        }
+        .btn-qty {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: none;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+            font-size: 12px;
+        }
+        .btn-qty:hover { background: #6B8A6B; color: white; }
+
+        .empty-icon-box {
+            width: 80px;
+            height: 80px;
+            background: #f8f9fa;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+
+        .content-area { background-color: #f8f9fa; min-height: 100vh; }
+        .order-summary-box { border: 1px dashed #ced4da; }
     </style>
 
     <script>
@@ -161,43 +187,17 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadCart();
             displayCart();
-            
-            // Cek apakah ada parameter success dari redirect
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('success')) {
-                showSuccessAlert('Pesanan berhasil dikirim! Keranjang telah dikosongkan.');
-                clearCartAndDisplay();
-            }
         });
 
         function loadCart() {
             const savedCart = localStorage.getItem('customerCart');
             if (savedCart) {
                 cart = JSON.parse(savedCart);
-                // Pastikan setiap item memiliki imageUrl (untuk gambar default)
-                for (let i = 0; i < cart.length; i++) {
-                    if (!cart[i].imageUrl) {
-                        cart[i].imageUrl = '/uploads/default.jpg';
-                    }
-                }
             }
         }
 
         function saveCart() {
             localStorage.setItem('customerCart', JSON.stringify(cart));
-        }
-
-        function clearCart() {
-            cart = [];
-            saveCart();
-            updateCartCountInMenu();
-        }
-
-        function clearCartAndDisplay() {
-            cart = [];
-            saveCart();
-            displayCart();
-            updateCartCountInMenu();
         }
 
         function displayCart() {
@@ -206,11 +206,19 @@
             const checkoutSection = document.getElementById('checkoutSection');
 
             if (cart.length === 0) {
-                cartItems.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">' +
-                    '<i class="fas fa-shopping-cart fa-3x mb-3 opacity-50"></i>' +
-                    '<p class="mb-2">Keranjang masih kosong</p>' +
-                    '<a href="/menu" class="btn btn-sage btn-sm"><i class="fas fa-utensils me-1"></i> Mulai Belanja</a>' +
-                    '</td></tr>';
+                cartItems.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <div class="empty-icon-box">
+                                <i class="fas fa-shopping-basket fa-3x text-muted"></i>
+                            </div>
+                            <h5 class="text-wood fw-bold">Keranjang Kosong</h5>
+                            <p class="text-muted small">Sepertinya Anda belum memilih cemilan apapun.</p>
+                            <a href="/menu" class="btn btn-sage btn-sm rounded-pill px-4 mt-2">
+                                <i class="fas fa-utensils me-1"></i> Mulai Belanja
+                            </a>
+                        </td>
+                    </tr>`;
                 cartFooter.style.display = 'none';
                 checkoutSection.style.display = 'none';
                 return;
@@ -219,136 +227,104 @@
             let total = 0;
             let html = '';
 
-            for (let i = 0; i < cart.length; i++) {
-                const item = cart[i];
+            cart.forEach(item => {
                 const subtotal = item.price * item.quantity;
                 total += subtotal;
+                const imageUrl = item.imageUrl || '/images/default-menu.jpg';
 
-                // Gunakan imageUrl jika ada, atau default
-                const imageUrl = item.imageUrl || '/uploads/default.jpg';
-
-                html += '<tr>' +
-                    '<td><img src="' + escapeHtml(imageUrl) + '" class="cart-img" alt="' + escapeHtml(item.name) + '" onerror="this.src=\'/uploads/default.jpg\'"></td>' +
-                    '<td><strong>' + escapeHtml(item.name) + '</strong></td>' +
-                    '<td>Rp ' + formatNumber(item.price) + '</td>' +
-                    '<td>' +
-                    '<div class="d-flex align-items-center gap-2">' +
-                    '<button class="btn btn-sm btn-outline-secondary" onclick="updateQuantity(' + item.id + ', -1)">-</button>' +
-                    '<span style="min-width: 30px; text-align: center;">' + item.quantity + '</span>' +
-                    '<button class="btn btn-sm btn-outline-secondary" onclick="updateQuantity(' + item.id + ', 1)">+</button>' +
-                    '</div>' +
-                    '</td>' +
-                    '<td>Rp ' + formatNumber(subtotal) + '</td>' +
-                    '<td><button class="btn btn-sm btn-danger" onclick="removeFromCart(' + item.id + ')"><i class="fas fa-trash"></i></button></td>' +
-                    '</tr>';
-            }
+                html += `
+                    <tr>
+                        <td class="ps-4"><img src="${escapeHtml(imageUrl)}" class="cart-img" onerror="this.src='/images/default-menu.jpg'"></td>
+                        <td><span class="fw-bold text-wood">${escapeHtml(item.name)}</span></td>
+                        <td><small class="text-muted">Rp ${formatNumber(item.price)}</small></td>
+                        <td class="text-center">
+                            <div class="qty-control">
+                                <button class="btn-qty" onclick="updateQuantity(${item.id}, -1)"><i class="fas fa-minus"></i></button>
+                                <span class="mx-3 fw-bold small">${item.quantity}</span>
+                                <button class="btn-qty" onclick="updateQuantity(${item.id}, 1)"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </td>
+                        <td><span class="fw-bold text-sage">Rp ${formatNumber(subtotal)}</span></td>
+                        <td class="text-center pe-4">
+                            <button class="btn btn-link text-danger p-0" onclick="removeFromCart(${item.id})">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+            });
 
             cartItems.innerHTML = html;
-            document.getElementById('cartTotal').innerHTML = 'Rp ' + formatNumber(total);
-            cartFooter.style.display = 'table-row-group';
+            document.getElementById('cartTotal').textContent = 'Rp ' + formatNumber(total);
+            cartFooter.style.display = 'table-footer-group';
             checkoutSection.style.display = 'block';
         }
 
         function updateQuantity(id, change) {
-            for (let i = 0; i < cart.length; i++) {
-                if (cart[i].id === id) {
-                    cart[i].quantity += change;
-                    if (cart[i].quantity <= 0) {
-                        cart.splice(i, 1);
-                    }
-                    break;
+            const item = cart.find(i => i.id === id);
+            if (item) {
+                item.quantity += change;
+                if (item.quantity <= 0) {
+                    removeFromCart(id);
+                } else {
+                    saveCart();
+                    displayCart();
                 }
             }
-            saveCart();
-            displayCart();
-            updateCartCountInMenu();
         }
 
         function removeFromCart(id) {
-            cart = cart.filter(item => item.id !== id);
-            saveCart();
-            displayCart();
-            updateCartCountInMenu();
-        }
-
-        function updateCartCountInMenu() {
-            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-            localStorage.setItem('cartCount', totalItems);
+            if (confirm('Hapus item ini dari keranjang?')) {
+                cart = cart.filter(item => item.id !== id);
+                saveCart();
+                displayCart();
+            }
         }
 
         function proceedToCheckout() {
-            if (cart.length === 0) {
-                alert('Keranjang masih kosong!');
-                return;
-            }
-
             let total = 0;
             let summaryHtml = '';
 
-            for (let i = 0; i < cart.length; i++) {
-                const item = cart[i];
+            cart.forEach(item => {
                 const subtotal = item.price * item.quantity;
                 total += subtotal;
-                summaryHtml += '<div class="d-flex justify-content-between mb-2">' +
-                    '<span>' + escapeHtml(item.name) + ' x ' + item.quantity + '</span>' +
-                    '<span>Rp ' + formatNumber(subtotal) + '</span>' +
-                    '</div>';
-            }
+                summaryHtml += `
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>${escapeHtml(item.name)} x${item.quantity}</span>
+                        <span class="fw-bold">Rp ${formatNumber(subtotal)}</span>
+                    </div>`;
+            });
 
             document.getElementById('orderSummary').innerHTML = summaryHtml;
-            document.getElementById('orderTotal').innerHTML = 'Rp ' + formatNumber(total);
+            document.getElementById('orderTotal').textContent = 'Rp ' + formatNumber(total);
             document.getElementById('cartDataInput').value = JSON.stringify(cart);
 
             new bootstrap.Modal(document.getElementById('checkoutModal')).show();
         }
 
-        function validateAndSubmit(event) {
-            event.preventDefault();
-            
-            const customerName = document.getElementById('customerName').value;
-
-            if (!customerName || customerName.trim() === '') {
-                alert('Nama lengkap harus diisi!');
-                return false;
+        // Handle Submit
+        document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const customerName = document.getElementById('customerName').value.trim();
+            if (!customerName) {
+                alert('Tolong isi nama lengkap Anda.');
+                return;
             }
-            
-            // Submit form menggunakan fetch
-            const formData = new FormData(document.getElementById('checkoutForm'));
-            
-            fetch('/pesanan/add', {
+
+            const formData = new FormData(this);
+            fetch(this.action, {
                 method: 'POST',
                 body: formData
             })
-            .then(response => {
-                if (response.ok) {
-                    // Kosongkan keranjang
-                    clearCart();
-                    // Tutup modal
-                    bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
-                    // Redirect ke halaman cart dengan parameter success
-                    window.location.href = '/pesanan/riwayat';
+            .then(res => {
+                if (res.ok) {
+                    localStorage.removeItem('customerCart'); // Bersihkan cart
+                    window.location.href = '/pesanan/riwayat?success=ordered';
                 } else {
-                    alert('Gagal mengirim pesanan! Silakan coba lagi.');
+                    alert('Gagal mengirim pesanan. Silakan coba lagi.');
                 }
             })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Terjadi kesalahan! Silakan coba lagi.');
-            });
-            
-            return false;
-        }
-
-        function showSuccessAlert(message) {
-            const alertDiv = document.getElementById('successAlert');
-            const messageSpan = document.getElementById('successMessage');
-            messageSpan.textContent = message;
-            alertDiv.style.display = 'block';
-            
-            setTimeout(function() {
-                alertDiv.style.display = 'none';
-            }, 5000);
-        }
+            .catch(() => alert('Terjadi kesalahan jaringan.'));
+        });
 
         function formatNumber(num) {
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -356,16 +332,9 @@
 
         function escapeHtml(str) {
             if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
+            return str.replace(/[&<>]/g, m => ({'&':'&amp;', '<':'&lt;', '>':'&gt;'}[m]));
         }
-
-        // Attach form submit handler
-        document.getElementById('checkoutForm')?.addEventListener('submit', validateAndSubmit);
     </script>
 </body>
+
 </html>

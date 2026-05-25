@@ -26,7 +26,7 @@
                     Menu KL IT del
                 </h2>
 
-                <!-- Cart Button - Redirect ke halaman keranjang terpisah -->
+                <!-- Cart Button -->
                 <a href="/cart" class="btn btn-sage">
                     <i class="fas fa-shopping-cart me-1"></i>
                     Keranjang
@@ -34,30 +34,14 @@
                 </a>
             </div>
 
-            <!-- Alert -->
+            <!-- Alert Messages -->
             <div th:if="${param.ordered != null}"
                  class="alert alert-success alert-dismissible fade show"
                  role="alert"
                  id="successAlert">
-
                 <i class="fas fa-check-circle me-2"></i>
                 Pesanan berhasil dikirim! Silakan tunggu konfirmasi dari admin.
-
-                <button type="button"
-                        class="btn-close"
-                        data-bs-dismiss="alert"></button>
-            </div>
-
-            <div th:if="${param.error != null}"
-                 class="alert alert-danger alert-dismissible fade show"
-                 role="alert">
-
-                <i class="fas fa-exclamation-circle me-2"></i>
-                Gagal mengirim pesanan!
-
-                <button type="button"
-                        class="btn-close"
-                        data-bs-dismiss="alert"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
 
             <!-- Category Tabs -->
@@ -83,17 +67,18 @@
 
             <!-- Menu Grid -->
             <div class="row" id="menuContainer">
-                <div class="col-md-4 mb-4"
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4"
                      th:each="menu : ${menus}"
                      th:if="${menu.available}"
                      th:attr="data-category=${menu.category}">
 
-                    <div class="card h-100 shadow-sm">
-                        <div class="position-relative">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="position-relative overflow-hidden">
+                            <!-- Image dengan trigger modal -->
                             <img th:src="${menu.image != null ? menu.image : '/images/default-menu.jpg'}"
-                                 class="card-img-top"
+                                 class="card-img-top menu-image-sync clickable-image"
                                  alt="Menu"
-                                 style="height: 220px; width: 100%; object-fit: cover;" 
+                                 th:attr="onclick=|showMenuDetail('${menu.name}', '${menu.image}', '${menu.description}')|"
                                  onerror="this.src='/images/default-menu.jpg'" />
                             
                             <div class="badge-overlay">
@@ -104,25 +89,13 @@
                                     <i class="fas fa-sparkles"></i> Baru
                                 </span>
                             </div>
-                            
-                            <div class="category-badge-bottom">
-                                <span class="category-icon" th:switch="${menu.category}">
-                                    <span th:case="'makanan'">🍽️</span>
-                                    <span th:case="'minuman'">☕</span>
-                                    <span th:case="'snack'">🍿</span>
-                                </span>
-                            </div>
                         </div>
 
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title fw-bold mb-2">
-                                <span th:text="${menu.name}"></span>
-                            </h5>
+                        <div class="card-body d-flex flex-column p-3">
+                            <h6 class="card-title fw-bold mb-1" th:text="${menu.name}"></h6>
+                            <p class="card-text text-muted small flex-grow-1 mb-2" th:text="${menu.description}"></p>
 
-                            <p class="card-text text-muted small flex-grow-1" th:text="${menu.description}">
-                            </p>
-
-                            <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                            <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
                                 <div class="price-container">
                                     <span class="price-label">Harga</span>
                                     <span class="price-value">
@@ -132,24 +105,35 @@
                                 
                                 <button type="button"
                                         class="btn-add-cart"
-                                        th:attr="
-                                            data-id=${menu.id},
-                                            data-name=${menu.name},
-                                            data-price=${menu.price},
-                                            data-image=${menu.image != null ? menu.image : '/images/default-menu.jpg'}"
+                                        th:attr="data-id=${menu.id}, data-name=${menu.name}, data-price=${menu.price}, data-image=${menu.image}"
                                         onclick="addToCart(this)">
-
-                                    <i class="fas fa-cart-plus me-1"></i>
-                                    Pesan
+                                    <i class="fas fa-cart-plus"></i>
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <div th:if="${#lists.isEmpty(menus)}" class="col-12 text-center py-5">
-                    <i class="fas fa-utensils fa-3x text-muted mb-3"></i>
-                    <p class="text-muted">Belum ada menu tersedia</p>
+    <!-- Modal Detail Menu -->
+    <div class="modal fade" id="menuDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0" style="border-radius: 20px;">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold text-wood" id="detailMenuName"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0 text-center">
+                    <img id="detailMenuImage" src="" class="img-fluid w-100" style="max-height: 400px; object-fit: contain; background: #f8f9fa;">
+                    <div class="p-4 text-start">
+                        <h6 class="fw-bold">Deskripsi:</h6>
+                        <p id="detailMenuDescription" class="text-muted"></p>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Tutup</button>
                 </div>
             </div>
         </div>
@@ -158,220 +142,55 @@
     <div th:replace="~{base :: scripts}"></div>
 
     <style>
-        .price {
-            color: #6B8A6B;
-            font-size: 1.1rem;
+        .menu-image-sync {
+            height: 180px;
+            width: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
         }
 
-        .category-tabs-wrapper {
-            background: white;
-            border-radius: 16px;
-            padding: 5px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-
-        .category-tabs {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            padding: 5px;
-        }
-
-        .category-tab {
-            flex: 1;
-            min-width: 150px;
-            padding: 12px 20px;
-            border: none;
-            background: #f8f9fa;
-            border-radius: 12px;
-            font-weight: 600;
-            color: #6c757d;
-            transition: all 0.3s ease;
+        /* Pointer saat diarahkan ke gambar */
+        .clickable-image {
             cursor: pointer;
         }
 
-        .category-tab:hover {
-            background: #e9ecef;
-            transform: translateY(-2px);
+        .clickable-image:hover {
+            opacity: 0.9;
         }
 
-        .category-tab.active {
-            background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);
-            color: white;
-            box-shadow: 0 4px 15px rgba(107,138,107,0.3);
-        }
-
-        .category-count {
-            display: inline-block;
-            margin-left: 8px;
-            padding: 2px 8px;
-            background: rgba(0,0,0,0.1);
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .category-tab.active .category-count {
-            background: rgba(255,255,255,0.2);
+        .card:hover .menu-image-sync {
+            transform: scale(1.1);
         }
 
         .card {
-            border-radius: 20px;
+            border-radius: 15px;
             overflow: hidden;
             transition: all 0.3s ease;
-            border: none;
             background: white;
         }
 
         .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
         }
 
-        .card-img-top {
-            border-radius: 20px 20px 0 0;
-            transition: transform 0.5s ease;
-        }
+        /* Kategori & Style Lainnya */
+        .category-tabs-wrapper { background: white; border-radius: 16px; padding: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .category-tabs { display: flex; gap: 10px; overflow-x: auto; padding: 5px; scrollbar-width: none; }
+        .category-tab { flex: 1; min-width: 140px; padding: 10px 15px; border: none; background: #f8f9fa; border-radius: 12px; font-weight: 600; color: #6c757d; transition: all 0.3s ease; white-space: nowrap; }
+        .category-tab.active { background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%); color: white; box-shadow: 0 4px 15px rgba(107,138,107,0.3); }
+        
+        .badge-overlay { position: absolute; top: 10px; right: 10px; z-index: 2; }
+        .badge-custom { padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: bold; color: white; }
+        .badge-custom.best-seller { background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); }
+        .badge-custom.new { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); }
 
-        .card:hover .card-img-top {
-            transform: scale(1.05);
-        }
-
-        .badge-overlay {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .badge-custom {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: bold;
-            color: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-
-        .badge-custom.best-seller {
-            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
-        }
-
-        .badge-custom.new {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-        }
-
-        .category-badge-bottom {
-            position: absolute;
-            bottom: 12px;
-            left: 12px;
-        }
-
-        .category-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            background: rgba(255,255,255,0.95);
-            border-radius: 50%;
-            font-size: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-        }
-
-        .price-container {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .price-label {
-            font-size: 11px;
-            color: #6c757d;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .price-value {
-            font-size: 20px;
-            font-weight: bold;
-            background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .btn-add-cart {
-            background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);
-            border: none;
-            padding: 10px 20px;
-            border-radius: 30px;
-            color: white;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .btn-add-cart:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(107,138,107,0.4);
-        }
-
-        .btn-sage {
-            background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            font-weight: 500;
-        }
-
-        .btn-sage:hover {
-            background: linear-gradient(135deg, #6B8A6B 0%, #5A7A5A 100%);
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        .text-wood {
-            color: #5A3E2B;
-            font-weight: 600;
-        }
-
-        .content-area {
-            background: linear-gradient(135deg, #f8f9fa 0%, #f0f2f5 100%);
-            min-height: calc(100vh - 70px);
-        }
-
-        @media (max-width: 768px) {
-            .category-tabs {
-                flex-direction: column;
-            }
-            .category-tab {
-                width: 100%;
-            }
-            .price-value {
-                font-size: 16px;
-            }
-            .btn-add-cart {
-                padding: 8px 16px;
-                font-size: 12px;
-            }
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .col-md-4 {
-            animation: fadeInUp 0.5s ease forwards;
-        }
+        .price-value { font-weight: bold; color: #6B8A6B; font-size: 15px; }
+        .btn-add-cart { width: 35px; height: 35px; border-radius: 50%; border: none; background: #6B8A6B; color: white; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
+        .btn-add-cart:hover { background: #5A3E2B; transform: rotate(15deg); }
+        .btn-sage { background: #6B8A6B; color: white; border: none; }
+        .text-wood { color: #5A3E2B; }
+        .content-area { background-color: #f8f9fa; min-height: 100vh; }
     </style>
 
     <script>
@@ -383,26 +202,30 @@
             updateCategoryCounts();
         });
 
-        function saveCart() {
-            localStorage.setItem('customerCart', JSON.stringify(cart));
+        // Fungsi untuk menampilkan detail di modal
+        function showMenuDetail(name, image, description) {
+            document.getElementById('detailMenuName').textContent = name;
+            document.getElementById('detailMenuImage').src = image || '/images/default-menu.jpg';
+            document.getElementById('detailMenuDescription').textContent = description || 'Tidak ada deskripsi.';
+            
+            const detailModal = new bootstrap.Modal(document.getElementById('menuDetailModal'));
+            detailModal.show();
         }
+
+        function saveCart() { localStorage.setItem('customerCart', JSON.stringify(cart)); }
 
         function loadCart() {
             const savedCart = localStorage.getItem('customerCart');
-            if (savedCart) {
-                cart = JSON.parse(savedCart);
-            }
+            if (savedCart) cart = JSON.parse(savedCart);
         }
 
         function updateCartCount() {
             let totalItems = 0;
-            for (let i = 0; i < cart.length; i++) {
-                totalItems += cart[i].quantity;
-            }
-            const cartCountElement = document.getElementById('cartCount');
-            if (cartCountElement) {
-                cartCountElement.textContent = totalItems;
-                cartCountElement.style.display = totalItems > 0 ? 'inline-block' : 'none';
+            cart.forEach(item => totalItems += item.quantity);
+            const el = document.getElementById('cartCount');
+            if (el) {
+                el.textContent = totalItems;
+                el.style.display = totalItems > 0 ? 'inline-block' : 'none';
             }
         }
 
@@ -411,9 +234,7 @@
             let counts = { makanan: 0, minuman: 0, snack: 0 };
             cards.forEach(card => {
                 const category = card.getAttribute('data-category');
-                if (category && counts[category] !== undefined) {
-                    counts[category]++;
-                }
+                if (counts[category] !== undefined) counts[category]++;
             });
             document.getElementById('countMakanan').textContent = counts.makanan;
             document.getElementById('countMinuman').textContent = counts.minuman;
@@ -421,22 +242,12 @@
         }
 
         function filterMenuByCategory(category) {
-            const tabs = document.querySelectorAll('.category-tab');
-            tabs.forEach(tab => {
-                tab.classList.remove('active');
-                if (tab.getAttribute('data-category') === category) {
-                    tab.classList.add('active');
-                }
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.getAttribute('data-category') === category);
             });
-            
-            const cards = document.querySelectorAll('#menuContainer > div');
-            cards.forEach(card => {
+            document.querySelectorAll('#menuContainer > div').forEach(card => {
                 const cardCategory = card.getAttribute('data-category');
-                if (category === 'all') {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = cardCategory === category ? 'block' : 'none';
-                }
+                card.style.display = (category === 'all' || cardCategory === category) ? 'block' : 'none';
             });
         }
 
@@ -450,13 +261,7 @@
             if (existingItem) {
                 existingItem.quantity++;
             } else {
-                cart.push({
-                    id: id,
-                    name: name,
-                    price: price,
-                    quantity: 1,
-                    imageUrl: imageUrl
-                });
+                cart.push({ id, name, price, quantity: 1, imageUrl });
             }
             saveCart();
             updateCartCount();
@@ -467,14 +272,10 @@
             const toast = document.getElementById('successToast');
             if (toast) {
                 const toastBody = toast.querySelector('.toast-body');
-                if (toastBody) {
-                    toastBody.textContent = message;
-                }
+                if (toastBody) toastBody.textContent = message;
                 toast.classList.remove('bg-success', 'bg-danger');
                 toast.classList.add(isError ? 'bg-danger' : 'bg-success');
                 new bootstrap.Toast(toast).show();
-            } else {
-                alert(message);
             }
         }
     </script>

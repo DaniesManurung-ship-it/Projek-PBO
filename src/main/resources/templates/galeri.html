@@ -1,84 +1,221 @@
 <!DOCTYPE html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
+
 <head th:replace="~{base :: head(title='Galeri Foto')}"></head>
+
 <body>
+    <!-- Toast -->
     <div th:replace="~{base :: toast}"></div>
+
+    <!-- Navbar -->
     <div th:replace="~{base :: navbar}"></div>
-    
+
     <div class="d-flex" style="margin-top: 70px;">
+
+        <!-- Sidebar -->
         <div th:replace="~{base :: sidebar}"></div>
-        
+
+        <!-- Content Area -->
         <div class="content-area flex-grow-1 p-4">
+
+            <!-- Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="text-wood"><i class="fas fa-images me-2"></i>Galeri Foto</h2>
+                <h2 class="text-wood">
+                    <i class="fas fa-images me-2"></i>
+                    Galeri Foto KL IT del
+                </h2>
             </div>
-            
-            <!-- Filter -->
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <select id="filterCategory" class="form-select" onchange="filterGallery()">
-                        <option value="all">Semua Kategori</option>
-                        <option value="interior">🏠 Interior</option>
-                        <option value="food">🍽️ Makanan</option>
-                        <option value="drink">☕ Minuman</option>
-                        <option value="event">🎉 Acara</option>
-                    </select>
+
+            <!-- Category Tabs (Disamakan dengan Menu) -->
+            <div class="category-tabs-wrapper mb-4">
+                <div class="category-tabs">
+                    <button class="category-tab active" data-category="all" onclick="filterGallery('all')">
+                        <i class="fas fa-th-large me-2"></i> Semua
+                    </button>
+                    <button class="category-tab" data-category="interior" onclick="filterGallery('interior')">
+                        🏠 Interior
+                    </button>
+                    <button class="category-tab" data-category="food" onclick="filterGallery('food')">
+                        🍽️ Makanan
+                    </button>
+                    <button class="category-tab" data-category="drink" onclick="filterGallery('drink')">
+                        ☕ Minuman
+                    </button>
+                    <button class="category-tab" data-category="event" onclick="filterGallery('event')">
+                        🎉 Acara
+                    </button>
                 </div>
             </div>
-            
+
             <!-- Gallery Grid -->
             <div class="row" id="galleryContainer">
-                <div class="col-lg-3 col-md-4 col-6 mb-3" th:each="gallery : ${galleries}" th:attr="data-category=${gallery.category}">
-                    <div class="gallery-card">
-                        <img th:src="${gallery.image != null ? gallery.image : '/images/default.jpg'}" class="gallery-image">
-                        <div class="p-2">
-                            <small class="fw-bold" th:text="${gallery.title}"></small>
-                            <p class="small text-muted mb-0" th:text="${gallery.description}"></p>
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4" 
+                     th:each="gallery : ${galleries}" 
+                     th:attr="data-category=${gallery.category}">
+                    
+                    <div class="card h-100 shadow-sm border-0 gallery-card">
+                        <div class="position-relative overflow-hidden">
+                            <!-- Image Sinkron dengan Menu (180px) -->
+                            <img th:src="${gallery.image != null ? gallery.image : '/images/default.jpg'}" 
+                                 class="card-img-top gallery-image-sync clickable-image"
+                                 th:attr="onclick=|showGalleryDetail('${gallery.title}', '${gallery.image}', '${gallery.description}')|"
+                                 alt="Gallery"
+                                 onerror="this.src='/images/default.jpg'">
+                        </div>
+                        <div class="card-body p-3">
+                            <h6 class="fw-bold mb-1 text-truncate" th:text="${gallery.title}"></h6>
+                            <p class="text-muted small mb-0 text-truncate-2" th:text="${gallery.description}"></p>
                         </div>
                     </div>
                 </div>
+
+                <!-- Tampilan jika galeri kosong -->
                 <div th:if="${#lists.isEmpty(galleries)}" class="col-12 text-center py-5">
-                    <i class="fas fa-images fa-3x text-muted mb-2"></i>
-                    <p class="text-muted">Belum ada galeri foto</p>
+                    <i class="fas fa-images fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Belum ada koleksi foto saat ini.</p>
                 </div>
             </div>
         </div>
     </div>
-    
+
+    <!-- Modal Detail Galeri (Sesuai Menu) -->
+    <div class="modal fade" id="galleryDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0" style="border-radius: 20px;">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold text-wood" id="detailGalleryTitle"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0 text-center">
+                    <!-- Object Contain agar foto 9:16 di modal tidak terpotong -->
+                    <img id="detailGalleryImage" src="" class="img-fluid w-100" 
+                         style="max-height: 450px; object-fit: contain; background: #f8f9fa;">
+                    <div class="p-4 text-start">
+                        <h6 class="fw-bold">Keterangan:</h6>
+                        <p id="detailGalleryDescription" class="text-muted"></p>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div th:replace="~{base :: scripts}"></div>
-    
+
     <style>
-        .gallery-card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            transition: all 0.3s;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        .gallery-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-        .gallery-image {
+        /* SINKRONISASI GAMBAR (180px) */
+        .gallery-image-sync {
             height: 180px;
             width: 100%;
             object-fit: cover;
+            transition: transform 0.5s ease;
         }
+
+        .gallery-card {
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .gallery-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        }
+
+        .gallery-card:hover .gallery-image-sync {
+            transform: scale(1.1);
+        }
+
+        .clickable-image {
+            cursor: pointer;
+        }
+
+        /* Category Tabs Styling (Sesuai Menu) */
+        .category-tabs-wrapper {
+            background: white;
+            border-radius: 16px;
+            padding: 5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .category-tabs {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 5px;
+            scrollbar-width: none;
+        }
+
+        .category-tab {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px 15px;
+            border: none;
+            background: #f8f9fa;
+            border-radius: 12px;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .category-tab.active {
+            background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(107,138,107,0.3);
+        }
+
+        .text-truncate-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .text-wood { color: #5A3E2B; }
+        .content-area { background-color: #f8f9fa; min-height: 100vh; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        #galleryContainer > div { animation: fadeInUp 0.4s ease forwards; }
     </style>
-    
+
     <script>
-        function filterGallery() {
-            const filter = document.getElementById('filterCategory').value;
+        // Fungsi Modal Detail (Sesuai Menu)
+        function showGalleryDetail(title, image, description) {
+            document.getElementById('detailGalleryTitle').textContent = title;
+            document.getElementById('detailGalleryImage').src = image || '/images/default.jpg';
+            document.getElementById('detailGalleryDescription').textContent = description || 'Tidak ada deskripsi.';
+            
+            const detailModal = new bootstrap.Modal(document.getElementById('galleryDetailModal'));
+            detailModal.show();
+        }
+
+        // Fungsi Filter Kategori
+        function filterGallery(category) {
+            // Update UI Tab Aktif
+            const tabs = document.querySelectorAll('.category-tab');
+            tabs.forEach(tab => {
+                tab.classList.toggle('active', tab.getAttribute('data-category') === category);
+            });
+            
+            // Filter Grid
             const cards = document.querySelectorAll('#galleryContainer > div');
             cards.forEach(card => {
-                const category = card.getAttribute('data-category');
-                if(filter === 'all') {
+                const cardCategory = card.getAttribute('data-category');
+                if (category === 'all' || cardCategory === category) {
                     card.style.display = 'block';
                 } else {
-                    card.style.display = category === filter ? 'block' : 'none';
+                    card.style.display = 'none';
                 }
             });
         }
     </script>
 </body>
+
 </html>

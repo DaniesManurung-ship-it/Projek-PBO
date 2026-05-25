@@ -1,128 +1,233 @@
 <!DOCTYPE html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
+
 <head th:replace="~{base :: head(title='Testimoni Pelanggan')}"></head>
+
 <body>
+    <!-- Toast -->
     <div th:replace="~{base :: toast}"></div>
+
+    <!-- Navbar -->
     <div th:replace="~{base :: navbar}"></div>
-    
+
     <div class="d-flex" style="margin-top: 70px;">
+        <!-- Sidebar -->
         <div th:replace="~{base :: sidebar}"></div>
-        
+
+        <!-- Content Area -->
         <div class="content-area flex-grow-1 p-4">
+            <!-- Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="text-wood"><i class="fas fa-star me-2"></i>Testimoni Pelanggan</h2>
-                <button class="btn btn-sage" data-bs-toggle="modal" data-bs-target="#testimoniModal" onclick="resetForm()">
-                    <i class="fas fa-plus me-1"></i>Beri Testimoni
+                <h2 class="text-wood">
+                    <i class="fas fa-comment-alt me-2"></i>
+                    Testimoni Pelanggan
+                </h2>
+                <button class="btn btn-sage rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#testimoniModal" onclick="resetForm()">
+                    <i class="fas fa-plus me-1"></i> Beri Testimoni
                 </button>
             </div>
-            
-            <div th:if="${success}" class="alert alert-success">
+
+            <!-- Success Alert -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-4" role="alert">
                 <i class="fas fa-check-circle me-2"></i> <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-            
-            <div class="row">
+
+            <!-- Testimoni Grid -->
+            <div class="row" id="testimoniContainer">
                 <div class="col-md-6 mb-4" th:each="testimoni : ${testimonials}">
-                    <div class="testimoni-card">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="testimoni-avatar">
-                                <span th:text="${#strings.substring(testimoni.name, 0, 1)}"></span>
-                            </div>
-                            <div>
-                                <strong th:text="${testimoni.name}"></strong>
-                                <div class="rating-star">
-                                    <span th:each="i,stat : ${#numbers.sequence(1, testimoni.rating)}">★</span>
-                                    <span th:each="i,stat : ${#numbers.sequence(testimoni.rating+1, 5)}">☆</span>
+                    <div class="card h-100 border-0 shadow-sm testimoni-card-modern">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <div class="testi-avatar-circle" th:text="${#strings.substring(testimoni.name, 0, 1)}"></div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="fw-bold mb-0 text-wood" th:text="${testimoni.name}"></h6>
+                                        <span class="badge-approved" th:if="${testimoni.approved}">
+                                            <i class="fas fa-check-circle"></i> Terverifikasi
+                                        </span>
+                                    </div>
+                                    <div class="rating-stars-gold">
+                                        <span th:each="i : ${#numbers.sequence(1, 5)}" 
+                                              th:text="${i <= testimoni.rating ? '★' : '☆'}"></span>
+                                    </div>
                                 </div>
                             </div>
-                            <span class="badge bg-success ms-auto" th:if="${testimoni.approved}">Disetujui</span>
+                            
+                            <p class="testi-message text-muted fst-italic" th:text="'&quot;' + ${testimoni.message} + '&quot;'"></p>
+                            
+                            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                                <small class="text-muted">
+                                    <i class="far fa-calendar-alt me-1"></i>
+                                    <span th:text="${#temporals.format(testimoni.createdAt, 'dd MMM yyyy')}"></span>
+                                </small>
+                                
+                                <!-- Tombol Hapus (Hanya muncul jika miliknya sendiri) -->
+                                <button class="btn btn-link text-danger p-0 text-decoration-none small" 
+                                        th:if="${session.loggedUser != null and testimoni.user != null and testimoni.user.id == session.loggedUser.id}" 
+                                        th:onclick="'deleteTestimoni(' + ${testimoni.id} + ')'">
+                                    <i class="fas fa-trash-alt me-1"></i> Hapus
+                                </button>
+                            </div>
                         </div>
-                        <p class="mt-3 text-muted" th:text="${testimoni.message}"></p>
-                        <small class="text-muted">
-                            <i class="far fa-calendar-alt me-1"></i>
-                            <span th:text="${#temporals.format(testimoni.createdAt, 'dd MMM yyyy')}"></span>
-                        </small>
-                        <button class="btn btn-sm btn-danger mt-2" th:if="${testimoni.user != null and testimoni.user.id == session.loggedUser.id}" th:onclick="'deleteTestimoni(' + ${testimoni.id} + ')'">
-                            <i class="fas fa-trash"></i> Hapus
-                        </button>
                     </div>
                 </div>
+
+                <!-- Empty State -->
                 <div th:if="${#lists.isEmpty(testimonials)}" class="col-12 text-center py-5">
-                    <i class="fas fa-star fa-3x text-muted mb-2"></i>
-                    <p class="text-muted">Belum ada testimoni. Jadilah yang pertama!</p>
-                </div>
-            </div>
-            
-            <!-- Modal Testimoni -->
-            <div class="modal fade" id="testimoniModal" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header bg-sage text-white">
-                            <h5 class="modal-title">Beri Testimoni</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form th:action="@{/testimoni/add}" method="post">
-                                <div class="mb-3">
-                                    <label>Nama</label>
-                                    <input type="text" name="name" class="form-control" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label>Rating</label>
-                                    <select name="rating" class="form-select" required>
-                                        <option value="5">⭐⭐⭐⭐⭐ - Sangat Baik</option>
-                                        <option value="4">⭐⭐⭐⭐ - Baik</option>
-                                        <option value="3">⭐⭐⭐ - Cukup</option>
-                                        <option value="2">⭐⭐ - Kurang</option>
-                                        <option value="1">⭐ - Buruk</option>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label>Testimoni</label>
-                                    <textarea name="message" class="form-control" rows="3" required></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-sage w-100">Kirim Testimoni</button>
-                            </form>
-                        </div>
+                    <div class="empty-icon-box mb-3">
+                        <i class="fas fa-star fa-3x text-muted"></i>
                     </div>
+                    <h5 class="text-wood fw-bold">Belum Ada Ulasan</h5>
+                    <p class="text-muted small">Jadilah pelanggan pertama yang membagikan pengalaman di KL IT del!</p>
                 </div>
             </div>
         </div>
     </div>
-    
+
+    <!-- Modal Form Testimoni -->
+    <div class="modal fade" id="testimoniModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 overflow-hidden">
+                <div class="modal-header text-white border-0" style="background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-pen-fancy me-2"></i>Beri Testimoni</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form th:action="@{/testimoni/add}" method="post">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Nama Anda</label>
+                            <input type="text" name="name" class="form-control rounded-3" placeholder="Masukkan nama..." required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Rating Pelayanan</label>
+                            <select name="rating" class="form-select rounded-3" required>
+                                <option value="5">⭐⭐⭐⭐⭐ - Sangat Puas</option>
+                                <option value="4">⭐⭐⭐⭐ - Puas</option>
+                                <option value="3">⭐⭐⭐ - Cukup</option>
+                                <option value="2">⭐⭐ - Kurang</option>
+                                <option value="1">⭐ - Kecewa</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Pesan Testimoni</label>
+                            <textarea name="message" class="form-control rounded-3" rows="4" placeholder="Ceritakan pengalamanmu..." required></textarea>
+                        </div>
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-sage w-100 rounded-pill py-2 fw-bold">
+                                Kirim Ulasan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div th:replace="~{base :: scripts}"></div>
-    
+
     <style>
-        .testimoni-card {
+        /* Card Styling */
+        .testimoni-card-modern {
+            border-radius: 20px;
+            transition: all 0.3s ease;
             background: white;
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            height: 100%;
         }
-        .testimoni-avatar {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, #8BA888, #A67B5B);
+
+        .testimoni-card-modern:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.1) !important;
+        }
+
+        /* Avatar Styling */
+        .testi-avatar-circle {
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, #8BA888 0%, #A67B5B 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 20px;
+            font-size: 22px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(139, 168, 136, 0.3);
+        }
+
+        /* Elements Styling */
+        .rating-stars-gold {
+            color: #f1c40f;
+            font-size: 14px;
+            letter-spacing: 2px;
+        }
+
+        .testi-message {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-top: 10px;
+        }
+
+        .badge-approved {
+            font-size: 10px;
+            background: #f4f9f4;
+            color: #6B8A6B;
+            padding: 2px 10px;
+            border-radius: 20px;
             font-weight: bold;
         }
-        .rating-star { color: #fbbf24; }
+
+        .empty-icon-box {
+            width: 80px;
+            height: 80px;
+            background: #f8f9fa;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+        }
+
+        /* Button & Form */
+        .btn-sage {
+            background: linear-gradient(135deg, #8BA888 0%, #6B8A6B 100%);
+            color: white;
+            border: none;
+            transition: 0.3s;
+        }
+
+        .btn-sage:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(107,138,107,0.4);
+            color: white;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #8BA888;
+            box-shadow: 0 0 0 0.25rem rgba(139, 168, 136, 0.25);
+        }
+
+        .text-wood { color: #5A3E2B; }
+        .content-area { background-color: #f8f9fa; min-height: 100vh; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        #testimoniContainer > div { animation: fadeInUp 0.5s ease forwards; }
     </style>
-    
+
     <script>
         function resetForm() {
-            document.querySelector('#testimoniModal form').reset();
+            const form = document.querySelector('#testimoniModal form');
+            if(form) form.reset();
         }
+
         function deleteTestimoni(id) {
-            if(confirm('Hapus testimoni ini?')) {
+            if (confirm('Apakah Anda yakin ingin menghapus ulasan ini secara permanen?')) {
                 window.location.href = '/testimoni/delete/' + id;
             }
         }
     </script>
 </body>
+
 </html>

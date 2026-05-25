@@ -1,7 +1,9 @@
 package com.kopitiam33.controller;
 
+import com.kopitiam33.model.Notifikasi;
 import com.kopitiam33.model.Pesanan;
 import com.kopitiam33.model.User;
+import com.kopitiam33.repository.NotifikasiRepository;
 import com.kopitiam33.repository.PesananRepository;
 import com.kopitiam33.repository.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,16 +23,19 @@ public class PesananController {
 
     private final PesananRepository pesananRepository;
     private final UserRepository userRepository;
+    private final NotifikasiRepository notifikasiRepository;  // ← TAMBAHKAN INI
 
-    public PesananController(PesananRepository pesananRepository, UserRepository userRepository) {
+    public PesananController(PesananRepository pesananRepository, 
+                             UserRepository userRepository,
+                             NotifikasiRepository notifikasiRepository) {  // ← TAMBAHKAN DI CONSTRUCTOR
         this.pesananRepository = pesananRepository;
         this.userRepository = userRepository;
+        this.notifikasiRepository = notifikasiRepository;
     }
 
     @PostMapping("/add")
     public String addPesanan(Authentication auth,
                              @RequestParam String customerName,
-                                
                              @RequestParam(required = false) String notes,
                              @RequestParam String cartData,
                              RedirectAttributes redirectAttributes) {
@@ -54,7 +59,6 @@ public class PesananController {
             Pesanan pesanan = new Pesanan();
             pesanan.setUser(user);
             pesanan.setCustomerName(customerName);
-         
             pesanan.setNotes(notes);
             pesanan.setItems(cartData);
             pesanan.setTotalPrice(totalPrice);
@@ -62,7 +66,6 @@ public class PesananController {
             
             pesananRepository.save(pesanan);
             
-            // Redirect ke halaman cart dengan parameter success
             redirectAttributes.addFlashAttribute("success", "Pesanan berhasil dikirim! Silakan tunggu konfirmasi.");
             return "redirect:/cart?success=true";
             
@@ -124,5 +127,45 @@ public class PesananController {
         }
         
         return "redirect:/pesanan/riwayat";
+    }
+
+    // ==================== UPDATE STATUS PESANAN DENGAN NOTIFIKASI ====================
+    @PostMapping("/status/{id}")
+    @ResponseBody
+    public String updatePesananStatus(@PathVariable Long id, 
+                                      @RequestParam String status,
+                                      Authentication auth) {
+        Pesanan pesanan = pesananRepository.findById(id).orElse(null);
+        if (pesanan != null) {
+            String oldStatus = pesanan.getStatus();
+            pesanan.setStatus(status);
+            pesananRepository.save(pesanan);
+            
+            // Buat notifikasi untuk customer jika status berubah
+            if (pesanan.getUser() != null && !oldStatus.equals(status)) {
+                Notifikasi notifikasi = new Notifikasi();
+                notifikasi.setUser(pesanan.getUser());
+                notifikasi.setRelatedId(pesanan.getId());
+                notifikasi.setType("order_update");
+                
+                String statusText = "";
+                if (status.equals("confirmed")) {
+                    statusText = "dikonfirmasi";
+                } else if (status.equals("completed")) {
+                    statusText = "selesai";
+                } else if (status.equals("cancelled")) {
+                    statusText = "dibatalkan";
+                } else {
+                    statusText = status;
+                }
+                
+                notifikasi.setTitle("Status Pesanan Berubah");
+                notifikasi.setMessage("Pesanan #" + pesanan.getId() + " Anda telah " + statusText);
+                notifikasiRepository.save(notifikasi);
+            }
+            
+            return "success";
+        }
+        return "error";
     }
 }

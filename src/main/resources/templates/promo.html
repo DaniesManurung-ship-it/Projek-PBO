@@ -1,69 +1,229 @@
 <!DOCTYPE html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
+
 <head th:replace="~{base :: head(title='Promo Spesial')}"></head>
+
 <body>
+
+    <!-- Toast -->
     <div th:replace="~{base :: toast}"></div>
+
+    <!-- Navbar -->
     <div th:replace="~{base :: navbar}"></div>
-    
+
     <div class="d-flex" style="margin-top: 70px;">
+
+        <!-- Sidebar -->
         <div th:replace="~{base :: sidebar}"></div>
-        
+
+        <!-- Content Area -->
         <div class="content-area flex-grow-1 p-4">
+
+            <!-- Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="text-wood"><i class="fas fa-tags me-2"></i>Promo Spesial</h2>
+                <h2 class="text-wood">
+                    <i class="fas fa-tags me-2"></i>
+                    Promo Spesial
+                </h2>
+
+                <!-- Cart Button -->
                 <a href="/cart" class="btn btn-sage">
-                    <i class="fas fa-shopping-cart me-1"></i> Keranjang
+                    <i class="fas fa-shopping-cart me-1"></i>
+                    Keranjang
                     <span id="cartCount" class="badge bg-danger ms-1 rounded-pill" style="display: none;">0</span>
                 </a>
             </div>
-            
-            <div class="row">
-                <div class="col-md-4 mb-4" th:each="promo : ${promos}" th:if="${promo.active}">
-                    <div class="card h-100 shadow-sm">
-                        <div class="position-relative">
-                            <img th:src="${promo.image != null ? promo.image : '/images/default-promo.jpg'}" class="card-img-top" style="height: 200px; object-fit: cover;">
-                            <div class="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 rounded m-2 fw-bold">-<span th:text="${promo.discount}"></span>%</div>
+
+            <!-- Promo Grid -->
+            <div class="row" id="promoContainer">
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4" th:each="promo : ${promos}" th:if="${promo.active}">
+                    
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="position-relative overflow-hidden">
+                            <!-- Image dengan trigger modal (Sesuai Menu) -->
+                            <img th:src="${promo.image != null ? promo.image : '/images/default-promo.jpg'}" 
+                                 class="card-img-top menu-image-sync clickable-image" 
+                                 alt="Promo"
+                                 th:attr="onclick=|showPromoDetail('${promo.name}', '${promo.image}', '${promo.description}', '${promo.discount}', '${promo.originalPrice}')|"
+                                 onerror="this.src='/images/default-promo.jpg'">
+                            
+                            <!-- Badge Diskon (Red style) -->
+                            <div class="badge-overlay">
+                                <span class="badge-custom-promo bg-danger">
+                                    <i class="fas fa-fire me-1"></i> -<span th:text="${promo.discount}"></span>%
+                                </span>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <h5 class="card-title fw-bold" th:text="${promo.name}"></h5>
-                            <p class="card-text text-muted small" th:text="${promo.description}"></p>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="text-muted text-decoration-line-through">Rp <span th:text="${#numbers.formatInteger(promo.originalPrice, 0, 'COMMA')}"></span></span>
-                                <span class="text-danger fw-bold">Rp <span th:text="${#numbers.formatInteger(promo.originalPrice - (promo.originalPrice * promo.discount / 100), 0, 'COMMA')}"></span></span>
+
+                        <div class="card-body d-flex flex-column p-3">
+                            <h6 class="card-title fw-bold mb-1" th:text="${promo.name}"></h6>
+                            <p class="card-text text-muted small flex-grow-1 mb-2" th:text="${promo.description}"></p>
+                            
+                            <!-- Date Range -->
+                            <div class="mb-2">
+                                <small class="text-muted" style="font-size: 11px;">
+                                    <i class="far fa-calendar-alt me-1"></i>
+                                    <span th:text="${#temporals.format(promo.startDate, 'dd MMM')}"></span> - 
+                                    <span th:text="${#temporals.format(promo.endDate, 'dd MMM yyyy')}"></span>
+                                </small>
                             </div>
-                            <small class="text-muted">
-                                <i class="far fa-calendar-alt me-1"></i>
-                                <span th:text="${#temporals.format(promo.startDate, 'dd MMM yyyy')}"></span> - 
-                                <span th:text="${#temporals.format(promo.endDate, 'dd MMM yyyy')}"></span>
-                            </small>
-                            <div class="mt-2">
-                                <span class="badge bg-success">Aktif</span>
-                            </div>
-                            <div class="mt-3">
+
+                            <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
+                                <div class="price-container">
+                                    <span class="text-muted text-decoration-line-through small" style="font-size: 10px;">
+                                        Rp <span th:text="${#numbers.formatInteger(promo.originalPrice, 0, 'COMMA')}"></span>
+                                    </span>
+                                    <div class="price-value">
+                                        Rp <span th:text="${#numbers.formatInteger(promo.originalPrice - (promo.originalPrice * promo.discount / 100), 0, 'COMMA')}"></span>
+                                    </div>
+                                </div>
+                                
                                 <button type="button" 
-                                        class="btn btn-primary btn-sm w-100" 
+                                        class="btn-add-cart" 
                                         th:attr="
                                             data-id=${promo.id}, 
                                             data-name=${promo.name}, 
                                             data-price=${promo.originalPrice - (promo.originalPrice * promo.discount / 100)},
                                             data-image=${promo.image != null ? promo.image : '/images/default-promo.jpg'}"
                                         onclick="addToCart(this)">
-                                    <i class="fas fa-cart-plus me-1"></i> Pesan
+                                    <i class="fas fa-cart-plus"></i>
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
+
                 <div th:if="${#lists.isEmpty(promos)}" class="col-12 text-center py-5">
-                    <i class="fas fa-tags fa-3x text-muted mb-2"></i>
-                    <p class="text-muted">Belum ada promo</p>
+                    <i class="fas fa-tags fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Belum ada promo tersedia</p>
                 </div>
             </div>
         </div>
     </div>
-    
+
+    <!-- Modal Detail Promo (Sesuai Menu) -->
+    <div class="modal fade" id="promoDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0" style="border-radius: 20px;">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold text-wood" id="detailPromoName"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0 text-center">
+                    <div class="position-relative">
+                        <img id="detailPromoImage" src="" class="img-fluid w-100" style="max-height: 400px; object-fit: contain; background: #f8f9fa;">
+                        <span id="detailPromoDiscount" class="position-absolute top-0 end-0 badge bg-danger m-3 p-2"></span>
+                    </div>
+                    <div class="p-4 text-start">
+                        <h6 class="fw-bold">Deskripsi Promo:</h6>
+                        <p id="detailPromoDescription" class="text-muted"></p>
+                        <div id="detailPromoPrice" class="mt-2 fw-bold text-success fs-5"></div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div th:replace="~{base :: scripts}"></div>
-    
+
+    <style>
+        /* Gaya Gambar Disamakan dengan Menu/Galeri */
+        .menu-image-sync {
+            height: 180px; /* Sesuai Menu & Galeri */
+            width: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .clickable-image { cursor: pointer; }
+        .clickable-image:hover { opacity: 0.9; }
+
+        .card:hover .menu-image-sync {
+            transform: scale(1.1);
+        }
+
+        .card {
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        }
+
+        /* Badge Promo Khusus */
+        .badge-overlay {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 2;
+        }
+
+        .badge-custom-promo {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .category-badge-bottom {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            z-index: 2;
+        }
+
+        .category-icon {
+            width: 35px;
+            height: 35px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Pricing & Buttons */
+        .price-value { font-weight: bold; color: #d63031; font-size: 15px; }
+
+        .btn-add-cart {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: none;
+            background: #6B8A6B;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .btn-add-cart:hover {
+            background: #5A3E2B;
+            transform: rotate(15deg);
+        }
+
+        .btn-sage { background: #6B8A6B; color: white; border: none; }
+        .text-wood { color: #5A3E2B; }
+        .content-area { background-color: #f8f9fa; min-height: 100vh; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .col-lg-3 { animation: fadeInUp 0.4s ease forwards; }
+    </style>
+
     <script>
         let cart = [];
 
@@ -72,26 +232,33 @@
             updateCartCount();
         });
 
-        function saveCart() {
-            localStorage.setItem('customerCart', JSON.stringify(cart));
+        // Modal Detail (Sesuai Menu)
+        function showPromoDetail(name, image, description, discount, originalPrice) {
+            const discountedPrice = originalPrice - (originalPrice * discount / 100);
+            document.getElementById('detailPromoName').textContent = name;
+            document.getElementById('detailPromoImage').src = image || '/images/default-promo.jpg';
+            document.getElementById('detailPromoDescription').textContent = description || 'Tidak ada deskripsi.';
+            document.getElementById('detailPromoDiscount').textContent = '-' + discount + '%';
+            document.getElementById('detailPromoPrice').textContent = 'Harga Promo: Rp ' + parseInt(discountedPrice).toLocaleString();
+            
+            const detailModal = new bootstrap.Modal(document.getElementById('promoDetailModal'));
+            detailModal.show();
         }
+
+        function saveCart() { localStorage.setItem('customerCart', JSON.stringify(cart)); }
 
         function loadCart() {
             const savedCart = localStorage.getItem('customerCart');
-            if (savedCart) {
-                cart = JSON.parse(savedCart);
-            }
+            if (savedCart) cart = JSON.parse(savedCart);
         }
 
         function updateCartCount() {
             let totalItems = 0;
-            for (let i = 0; i < cart.length; i++) {
-                totalItems += cart[i].quantity;
-            }
-            const cartCountElement = document.getElementById('cartCount');
-            if (cartCountElement) {
-                cartCountElement.textContent = totalItems;
-                cartCountElement.style.display = totalItems > 0 ? 'inline-block' : 'none';
+            cart.forEach(item => totalItems += item.quantity);
+            const el = document.getElementById('cartCount');
+            if (el) {
+                el.textContent = totalItems;
+                el.style.display = totalItems > 0 ? 'inline-block' : 'none';
             }
         }
 
@@ -105,17 +272,22 @@
             if (existingItem) {
                 existingItem.quantity++;
             } else {
-                cart.push({
-                    id: id,
-                    name: name,
-                    price: price,
-                    quantity: 1,
-                    imageUrl: imageUrl
-                });
+                cart.push({ id, name, price, quantity: 1, imageUrl });
             }
             saveCart();
             updateCartCount();
-            alert(name + ' ditambahkan ke keranjang!');
+            showToast(name + ' ditambahkan ke keranjang!', false);
+        }
+
+        function showToast(message, isError) {
+            const toast = document.getElementById('successToast');
+            if (toast) {
+                const toastBody = toast.querySelector('.toast-body');
+                if (toastBody) toastBody.textContent = message;
+                toast.classList.remove('bg-success', 'bg-danger');
+                toast.classList.add(isError ? 'bg-danger' : 'bg-success');
+                new bootstrap.Toast(toast).show();
+            }
         }
     </script>
 </body>

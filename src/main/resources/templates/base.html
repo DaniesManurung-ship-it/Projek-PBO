@@ -85,9 +85,11 @@
             padding-left: 32px;
         }
         
+        /* ACTIVE STATE - WARNA HIJAU SAGE */
         .sidebar-customer .nav-link.active, .sidebar-admin .nav-link.active {
             background: linear-gradient(135deg, var(--sage) 0%, var(--sage-dark) 100%);
             color: white;
+            box-shadow: 0 4px 12px rgba(107, 138, 107, 0.3);
         }
         
         .sidebar-customer .nav-link i, .sidebar-admin .nav-link i {
@@ -173,92 +175,6 @@
             .mobile-toggle {
                 display: block;
             }
-
-                :root {
-        --sage: #8BA888;
-        --sage-dark: #6B8A6B;
-        --cream: #F5EFE6;
-        --wood: #A67B5B;
-        --accent: #D97642;
-    }
-    
-    /* Sidebar Admin - Sama seperti customer */
-    .sidebar-admin {
-        min-height: calc(100vh - 70px);
-        background: linear-gradient(180deg, var(--wood) 0%, #5a3a28 100%);
-        width: 280px;
-        transition: all 0.3s;
-        border-radius: 0 20px 20px 0;
-    }
-    
-    .sidebar-admin .nav-link {
-        color: rgba(255,255,255,0.85);
-        padding: 12px 24px;
-        transition: all 0.3s ease;
-        border-radius: 12px;
-        margin: 4px 12px;
-    }
-    
-    .sidebar-admin .nav-link:hover {
-        background: rgba(139, 168, 136, 0.3);
-        color: white;
-        padding-left: 32px;
-    }
-    
-    .sidebar-admin .nav-link.active {
-        background: linear-gradient(135deg, var(--sage) 0%, var(--sage-dark) 100%);
-        color: white;
-    }
-    
-    .sidebar-admin .nav-link i {
-        width: 28px;
-        margin-right: 10px;
-    }
-    
-    .sidebar-admin .sidebar-header {
-        text-align: center;
-        padding: 20px 0;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-        margin-bottom: 10px;
-    }
-    
-    .sidebar-admin .sidebar-header i {
-        font-size: 48px;
-        color: white;
-        margin-bottom: 10px;
-    }
-    
-    .sidebar-admin .sidebar-header h6 {
-        color: white;
-        margin: 0;
-        font-size: 14px;
-        opacity: 0.8;
-    }
-    
-    /* Card styles */
-    .card {
-        border-radius: 16px;
-        overflow: hidden;
-        transition: transform 0.3s, box-shadow 0.3s;
-    }
-    
-    .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    }
-    
-    /* Table styles */
-    .table th {
-        background: linear-gradient(135deg, var(--sage) 0%, var(--sage-dark) 100%);
-        color: white;
-        font-weight: 600;
-    }
-    
-    .btn-success, .btn-warning, .btn-danger, .btn-info {
-        border-radius: 8px;
-        padding: 6px 12px;
-        font-size: 12px;
-    }
         }
     </style>
 </head>
@@ -276,26 +192,56 @@
                 </a>
             </div>
             <div class="d-flex align-items-center gap-3">
-                <span th:if="${session.loggedUser != null}" class="text-white">
-                </span>
-                <a th:if="${session.loggedUser != null and session.loggedUser.role == 'ADMIN'}" href="/admin" class="btn btn-sm btn-warning me-2">
+                <!-- Admin Panel Button -->
+                <a th:if="${session.loggedUser != null and session.loggedUser.role == 'ADMIN'}" 
+                   href="/admin" class="btn btn-sm btn-warning me-2">
                     <i class="fas fa-cogs"></i> Admin Panel
                 </a>
-<!-- Di dalam navbar, setelah tombol logout -->
-<div class="dropdown" th:if="${session.loggedUser != null}">
-    <button class="btn btn-link text-white dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-        <i class="fas fa-user-circle fa-lg"></i> <span th:text="${session.loggedUser.fullName}"></span>
-    </button>
-    <ul class="dropdown-menu dropdown-menu-end">
-        <li><a class="dropdown-item" href="/profile">
-            <i class="fas fa-user me-2"></i> Profile Saya
-        </a></li>
-        <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item text-danger" href="/logout">
-            <i class="fas fa-sign-out-alt me-2"></i> Logout
-        </a></li>
-    </ul>
-</div>
+                
+                <!-- Admin Logout -->
+                <a th:if="${session.loggedUser != null and session.loggedUser.role == 'ADMIN'}" 
+                   href="/logout" class="btn btn-sm btn-light">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+                
+                <!-- NOTIFIKASI ICON - HANYA UNTUK CUSTOMER -->
+                <div th:if="${session.loggedUser != null and session.loggedUser.role != 'ADMIN'}" class="dropdown">
+                    <button class="btn btn-link text-white position-relative dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="text-decoration: none;">
+                        <i class="fas fa-bell fa-lg"></i>
+                        <span id="notifBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 10px; display: none; min-width: 18px; padding: 2px 5px;">
+                            0
+                        </span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" id="notifDropdown" style="width: 320px;">
+                        <li class="dropdown-header bg-light d-flex justify-content-between align-items-center">
+                            <strong>Notifikasi</strong>
+                            <button class="btn btn-sm btn-link" onclick="markAllAsRead()">Tandai semua dibaca</button>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li id="notifLoading" class="text-center py-3">Memuat notifikasi...</li>
+                        <li id="notifEmpty" class="text-center py-3 text-muted" style="display: none;">Tidak ada notifikasi</li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-center" href="/notifikasi">Lihat Semua Notifikasi</a></li>
+                    </ul>
+                </div>
+                
+                <!-- PROFILE DROPDOWN - HANYA UNTUK CUSTOMER -->
+                <div th:if="${session.loggedUser != null and session.loggedUser.role != 'ADMIN'}" class="dropdown">
+                    <button class="btn btn-link text-white dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="text-decoration: none;">
+                        <i class="fas fa-user-circle fa-lg"></i> <span th:text="${session.loggedUser.fullName}"></span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="/profile">
+                            <i class="fas fa-user me-2"></i> Profile Saya
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="/logout">
+                            <i class="fas fa-sign-out-alt me-2"></i> Logout
+                        </a></li>
+                    </ul>
+                </div>
+                
+                <!-- Login Button -->
                 <a th:if="${session.loggedUser == null}" href="/login" class="btn btn-sm btn-light">
                     <i class="fas fa-sign-in-alt"></i> Login
                 </a>
@@ -308,7 +254,7 @@
 <div th:fragment="sidebar">
     <div class="sidebar-customer" id="sidebar">
         <div class="sidebar-header">
-          <i class="fas fa-box-open"></i>
+            <i class="fas fa-box-open"></i>
             <h6>Menu Navigasi</h6>
         </div>
         <nav class="nav flex-column">
@@ -328,8 +274,12 @@
                 <i class="fas fa-tags"></i> Promo
             </a>
             <a class="nav-link" th:classappend="${activePage == 'riwayat'} ? 'active' : ''" href="/pesanan/riwayat">
-    <i class="fas fa-receipt"></i> Riwayat Pesanan
-</a>
+                <i class="fas fa-receipt"></i> Riwayat Pesanan
+            </a>
+            <a class="nav-link" th:classappend="${activePage == 'notifikasi'} ? 'active' : ''" href="/notifikasi">
+                <i class="fas fa-bell"></i> Notifikasi
+                <span id="sidebarNotifBadge" class="badge bg-danger ms-2" style="display: none; border-radius: 30px; padding: 2px 6px;">0</span>
+            </a>
         </nav>
     </div>
 </div>
@@ -358,26 +308,21 @@
                 <i class="fas fa-star"></i> Kelola Testimoni
             </a>
             <a class="nav-link" th:classappend="${activePage == 'admin-pesanan'} ? 'active' : ''" href="/admin/pesanan">
-    <i class="fas fa-receipt"></i> Lihat Pesanan
-</a>
+                <i class="fas fa-receipt"></i> Lihat Pesanan
+            </a>
         </nav>
     </div>
-    
 </div>
 
 <!-- SCRIPTS -->
 <div th:fragment="scripts">
     <script>
-        // Function to initialize sidebar toggle for both customer and admin
         function initSidebarToggle() {
-            const toggleBtn = document.getElementById('sidebarToggle');
-            const sidebar = document.getElementById('sidebar');
-            
+            var toggleBtn = document.getElementById('sidebarToggle');
+            var sidebar = document.getElementById('sidebar');
             if (toggleBtn && sidebar) {
-                // Remove existing listeners to avoid duplicates
-                const newToggleBtn = toggleBtn.cloneNode(true);
+                var newToggleBtn = toggleBtn.cloneNode(true);
                 toggleBtn.parentNode.replaceChild(newToggleBtn, toggleBtn);
-                
                 newToggleBtn.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
@@ -386,11 +331,9 @@
             }
         }
         
-        // Close sidebar when clicking outside on mobile
         document.addEventListener('click', function(event) {
-            const sidebar = document.getElementById('sidebar');
-            const toggleBtn = document.getElementById('sidebarToggle');
-            
+            var sidebar = document.getElementById('sidebar');
+            var toggleBtn = document.getElementById('sidebarToggle');
             if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('show')) {
                 if (toggleBtn && !toggleBtn.contains(event.target) && !sidebar.contains(event.target)) {
                     sidebar.classList.remove('show');
@@ -398,18 +341,17 @@
             }
         });
         
-        // Initialize when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
             initSidebarToggle();
+            loadNotificationBadge();
         });
         
-        // Re-initialize after any AJAX content load (for modals, etc.)
         document.addEventListener('shown.bs.modal', function() {
             initSidebarToggle();
         });
         
         function showToast(message, isError) {
-            const toast = document.getElementById('successToast');
+            var toast = document.getElementById('successToast');
             if (toast) {
                 toast.querySelector('.toast-body').textContent = message;
                 toast.classList.remove('bg-success', 'bg-danger');
@@ -417,6 +359,123 @@
                 new bootstrap.Toast(toast).show();
             }
         }
+        
+        // ==================== NOTIFIKASI BADGE ====================
+        function loadNotificationBadge() {
+            // Hanya untuk customer
+            var isAdmin = document.querySelector('a[href="/admin"]') !== null;
+            if (isAdmin) return;
+            
+            fetch('/api/notifikasi/count')
+                .then(function(response) {
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    return response.json();
+                })
+                .then(function(count) {
+                    console.log('Notifikasi count:', count);
+                    updateBadgeDisplay('notifBadge', count);
+                    updateBadgeDisplay('sidebarNotifBadge', count);
+                })
+                .catch(function(error) {
+                    console.error('Error loading notification count:', error);
+                });
+        }
+        
+        function updateBadgeDisplay(elementId, count) {
+            var badge = document.getElementById(elementId);
+            if (badge) {
+                if (count > 0) {
+                    badge.textContent = count > 99 ? '99+' : count;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        }
+        
+        function markAllAsRead() {
+            fetch('/api/notifikasi/mark-read', { method: 'POST' })
+                .then(function(response) {
+                    if (response.ok) {
+                        updateBadgeDisplay('notifBadge', 0);
+                        updateBadgeDisplay('sidebarNotifBadge', 0);
+                        // Reload dropdown content
+                        var dropdownToggle = document.querySelector('#notifDropdown')?.closest('.dropdown')?.querySelector('.dropdown-toggle');
+                        if (dropdownToggle) {
+                            var event = new Event('show.bs.dropdown');
+                            dropdownToggle.dispatchEvent(event);
+                        }
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error marking all as read:', error);
+                });
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
+        // Load dropdown notifikasi ketika dropdown dibuka
+        var notifDropdown = document.getElementById('notifDropdown');
+        if (notifDropdown) {
+            var dropdownParent = notifDropdown.closest('.dropdown');
+            if (dropdownParent) {
+                var dropdownToggle = dropdownParent.querySelector('.dropdown-toggle');
+                if (dropdownToggle) {
+                    dropdownToggle.addEventListener('show.bs.dropdown', function() {
+                        fetch('/api/notifikasi')
+                            .then(function(response) { return response.json(); })
+                            .then(function(data) {
+                                var loadingEl = document.getElementById('notifLoading');
+                                var emptyEl = document.getElementById('notifEmpty');
+                                if (loadingEl) loadingEl.style.display = 'none';
+                                
+                                // Hapus item notifikasi lama
+                                var items = notifDropdown.querySelectorAll('.notification-item');
+                                items.forEach(function(el) { el.remove(); });
+                                var extraDividers = notifDropdown.querySelectorAll('.dropdown-divider:not(:first-of-type)');
+                                extraDividers.forEach(function(el) { el.remove(); });
+                                
+                                if (data && data.length > 0) {
+                                    if (emptyEl) emptyEl.style.display = 'none';
+                                    var firstDivider = notifDropdown.querySelector('.dropdown-divider');
+                                    data.slice(0, 5).forEach(function(notif) {
+                                        var isReadClass = notif.read ? 'opacity-50' : '';
+                                        var html = '<li class="dropdown-item notification-item ' + isReadClass + '">' +
+                                            '<div class="d-flex align-items-start gap-2">' +
+                                            '<i class="fas fa-bell text-sage mt-1"></i>' +
+                                            '<div>' +
+                                            '<strong class="small">' + escapeHtml(notif.title) + '</strong>' +
+                                            '<p class="small text-muted mb-0">' + escapeHtml(notif.message) + '</p>' +
+                                            '<small class="text-muted">' + new Date(notif.createdAt).toLocaleString('id-ID') + '</small>' +
+                                            '</div>' +
+                                            '</div>' +
+                                            '</li><li><hr class="dropdown-divider"></li>';
+                                        if (firstDivider) {
+                                            firstDivider.insertAdjacentHTML('afterend', html);
+                                        }
+                                    });
+                                } else {
+                                    if (emptyEl) emptyEl.style.display = 'block';
+                                }
+                            })
+                            .catch(function(error) {
+                                console.error('Error loading notifications dropdown:', error);
+                            });
+                    });
+                }
+            }
+        }
+        
+        // Refresh badge setiap 30 detik
+        setInterval(loadNotificationBadge, 30000);
     </script>
 </div>
 

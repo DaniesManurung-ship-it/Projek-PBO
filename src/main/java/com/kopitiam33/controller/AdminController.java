@@ -4,6 +4,7 @@ import com.kopitiam33.model.*;
 import com.kopitiam33.repository.*;
 import com.kopitiam33.service.ImageService;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -24,32 +26,69 @@ public class AdminController {
     private final GaleriRepository galeriRepository;
     private final PesananRepository pesananRepository;
     private final ImageService imageService;
+    private final NotifikasiRepository notifikasiRepository;
+    private final UserRepository userRepository;
 
     public AdminController(MenuRepository menuRepository,
                          PromoRepository promoRepository,
                          TestimoniRepository testimoniRepository,
                          GaleriRepository galeriRepository,
                          PesananRepository pesananRepository,
-                         ImageService imageService) {
+                         ImageService imageService,
+                         NotifikasiRepository notifikasiRepository,
+                         UserRepository userRepository) {
         this.menuRepository = menuRepository;
         this.promoRepository = promoRepository;
         this.testimoniRepository = testimoniRepository;
         this.galeriRepository = galeriRepository;
         this.pesananRepository = pesananRepository;
         this.imageService = imageService;
+        this.notifikasiRepository = notifikasiRepository;
+        this.userRepository = userRepository;
     }
 
     @GetMapping({"", "/"})
     public String dashboard(Model model) {
+        // ==================== STATISTIK SEDERHANA ====================
         model.addAttribute("menuCount", menuRepository.count());
+        model.addAttribute("pesananCount", pesananRepository.count());
         model.addAttribute("testimoniCount", testimoniRepository.count());
         model.addAttribute("promoCount", promoRepository.count());
-        model.addAttribute("pesananCount", pesananRepository.count());
-
-
+        
+        // ==================== DATA UNTUK CHART PESANAN PER BULAN ====================
+        List<String> chartLabels = new ArrayList<>();
+        List<Integer> chartData = new ArrayList<>();
+        
+        String[] bulanNames = {"Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"};
+        
+        LocalDate now = LocalDate.now();
+        for (int i = 11; i >= 0; i--) {
+            LocalDate month = now.minusMonths(i);
+            int monthValue = month.getMonthValue();
+            int year = month.getYear();
+            
+            chartLabels.add(bulanNames[monthValue - 1] + " " + year);
+            
+            long count = pesananRepository.countByMonthAndYear(monthValue, year);
+            chartData.add((int) count);
+            
+            System.out.println("Chart - " + bulanNames[monthValue - 1] + " " + year + ": " + count + " pesanan");
+        }
+        
+        model.addAttribute("chartLabels", chartLabels);
+        model.addAttribute("chartData", chartData);
+        
+        // ==================== TESTIMONI TERBARU ====================
         List<Testimoni> recentTestimoni = testimoniRepository.findAllByOrderByCreatedAtDesc().stream().limit(5).toList();
         model.addAttribute("recentTestimoni", recentTestimoni);
-
+        
+        // ==================== PESANAN TERBARU ====================
+        List<Pesanan> recentPesanan = pesananRepository.findAllByOrderByCreatedAtDesc().stream().limit(5).toList();
+        model.addAttribute("recentPesanan", recentPesanan);
+        
+        // ==================== ACTIVE PAGE ====================
+        model.addAttribute("activePage", "admin-dashboard");
+        
         return "admin/dashboard";
     }
 
@@ -57,6 +96,7 @@ public class AdminController {
     @GetMapping("/menu")
     public String manageMenu(Model model) {
         model.addAttribute("menus", menuRepository.findAll());
+        model.addAttribute("activePage", "admin-menu");
         return "admin/menu";
     }
 
@@ -157,6 +197,7 @@ public class AdminController {
     @GetMapping("/promo")
     public String managePromo(Model model) {
         model.addAttribute("promos", promoRepository.findAllByOrderByCreatedAtDesc());
+        model.addAttribute("activePage", "admin-promo");
         return "admin/promo";
     }
 
@@ -259,6 +300,7 @@ public class AdminController {
     @GetMapping("/galeri")
     public String manageGaleri(Model model) {
         model.addAttribute("galeris", galeriRepository.findAllByOrderByCreatedAtDesc());
+        model.addAttribute("activePage", "admin-galeri");
         return "admin/galeri";
     }
 
@@ -349,6 +391,7 @@ public class AdminController {
     @GetMapping("/testimoni")
     public String manageTestimoni(Model model) {
         model.addAttribute("testimonis", testimoniRepository.findAllByOrderByCreatedAtDesc());
+        model.addAttribute("activePage", "admin-testimoni");
         return "admin/testimoni";
     }
 
@@ -403,6 +446,7 @@ public class AdminController {
     @GetMapping("/pesanan")
     public String viewPesanan(Model model) {
         model.addAttribute("pesanans", pesananRepository.findAllByOrderByCreatedAtDesc());
+        model.addAttribute("activePage", "admin-pesanan");
         return "admin/pesanan";
     }
 
@@ -411,8 +455,33 @@ public class AdminController {
     public String updatePesananStatus(@PathVariable Long id, @RequestParam String status) {
         Pesanan pesanan = pesananRepository.findById(id).orElse(null);
         if (pesanan != null) {
+            String oldStatus = pesanan.getStatus();
             pesanan.setStatus(status);
             pesananRepository.save(pesanan);
+            
+            // Buat notifikasi untuk customer jika status berubah
+            if (pesanan.getUser() != null && !oldStatus.equals(status)) {
+                Notifikasi notifikasi = new Notifikasi();
+                notifikasi.setUser(pesanan.getUser());
+                notifikasi.setRelatedId(pesanan.getId());
+                notifikasi.setType("order_update");
+                
+                String statusText = "";
+                if (status.equals("confirmed")) {
+                    statusText = "dikonfirmasi";
+                } else if (status.equals("completed")) {
+                    statusText = "selesai";
+                } else if (status.equals("cancelled")) {
+                    statusText = "dibatalkan";
+                } else {
+                    statusText = status;
+                }
+                
+                notifikasi.setTitle("Status Pesanan Berubah");
+                notifikasi.setMessage("Pesanan #" + pesanan.getId() + " Anda telah " + statusText);
+                notifikasiRepository.save(notifikasi);
+            }
+            
             return "success";
         }
         return "error";
@@ -434,6 +503,42 @@ public class AdminController {
     public Pesanan getPesanan(@PathVariable Long id) {
         return pesananRepository.findById(id).orElse(null);
     }
-    
-    
+
+    // ==================== API NOTIFIKASI ====================
+    @GetMapping("/api/notifikasi/count")
+    @ResponseBody
+    public long getUnreadCount(Authentication auth) {
+        if (auth != null && auth.isAuthenticated()) {
+            User user = userRepository.findByUsername(auth.getName()).orElse(null);
+            if (user != null) {
+                return notifikasiRepository.countByUserAndIsRead(user, false);
+            }
+        }
+        return 0;
+    }
+
+    @GetMapping("/api/notifikasi")
+    @ResponseBody
+    public List<Notifikasi> getNotifications(Authentication auth) {
+        if (auth != null && auth.isAuthenticated()) {
+            User user = userRepository.findByUsername(auth.getName()).orElse(null);
+            if (user != null) {
+                return notifikasiRepository.findByUserOrderByCreatedAtDesc(user);
+            }
+        }
+        return List.of();
+    }
+
+    @PostMapping("/api/notifikasi/mark-read")
+    @ResponseBody
+    public String markAllAsRead(Authentication auth) {
+        if (auth != null && auth.isAuthenticated()) {
+            User user = userRepository.findByUsername(auth.getName()).orElse(null);
+            if (user != null) {
+                notifikasiRepository.markAllAsRead(user);
+                return "success";
+            }
+        }
+        return "error";
+    }
 }
