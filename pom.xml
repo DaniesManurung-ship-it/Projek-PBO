@@ -10,11 +10,11 @@
 		<relativePath/>
 	</parent>
 	
-	<groupId>com.kopitiam33</groupId>
-	<artifactId>kopitiam33</artifactId>
+	<groupId>com.kldel</groupId>
+	<artifactId>kldel</artifactId>
 	<version>1.0.0</version>
-	<name>Kopitiam33</name>
-	<description>Café Kopitiam33 Application</description>
+	<name>KL Del</name>
+	<description>Café KL Del Application</description>
 
 	<properties>
 		<java.version>17</java.version>  <!-- Gunakan Java 17 untuk kompatibilitas -->
