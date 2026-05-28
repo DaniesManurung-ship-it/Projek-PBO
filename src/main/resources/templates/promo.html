@@ -41,11 +41,11 @@
                     <div class="card h-100 shadow-sm border-0">
                         <div class="position-relative overflow-hidden">
                             <!-- Image dengan trigger modal (Sesuai Menu) -->
-                            <img th:src="${promo.image != null ? promo.image : '/images/default-promo.jpg'}" 
+                            <img th:src="${promo.image != null ? promo.image : '/uploads/default.jpg'}" 
                                  class="card-img-top menu-image-sync clickable-image" 
                                  alt="Promo"
                                  th:attr="onclick=|showPromoDetail('${promo.name}', '${promo.image}', '${promo.description}', '${promo.discount}', '${promo.originalPrice}')|"
-                                 onerror="this.src='/images/default-promo.jpg'">
+                                 onerror="this.src='/uploads/default.jpg'">
                             
                             <!-- Badge Diskon (Red style) -->
                             <div class="badge-overlay">
@@ -84,7 +84,7 @@
                                             data-id=${promo.id}, 
                                             data-name=${promo.name}, 
                                             data-price=${promo.originalPrice - (promo.originalPrice * promo.discount / 100)},
-                                            data-image=${promo.image != null ? promo.image : '/images/default-promo.jpg'}"
+                                            data-image=${promo.image != null ? promo.image : '/uploads/default.jpg'}"
                                         onclick="addToCart(this)">
                                     <i class="fas fa-cart-plus"></i>
                                 </button>
@@ -236,7 +236,7 @@
         function showPromoDetail(name, image, description, discount, originalPrice) {
             const discountedPrice = originalPrice - (originalPrice * discount / 100);
             document.getElementById('detailPromoName').textContent = name;
-            document.getElementById('detailPromoImage').src = image || '/images/default-promo.jpg';
+            document.getElementById('detailPromoImage').src = image || '/uploads/default.jpg';
             document.getElementById('detailPromoDescription').textContent = description || 'Tidak ada deskripsi.';
             document.getElementById('detailPromoDiscount').textContent = '-' + discount + '%';
             document.getElementById('detailPromoPrice').textContent = 'Harga Promo: Rp ' + parseInt(discountedPrice).toLocaleString();
@@ -245,10 +245,17 @@
             detailModal.show();
         }
 
-        function saveCart() { localStorage.setItem('customerCart', JSON.stringify(cart)); }
+        function getCartKey() {
+            var meta = document.querySelector('meta[name="current-user"]');
+            var user = meta && meta.content ? meta.content : null;
+            if (!user || user === 'anonymousUser') return 'customerCart_guest';
+            return 'customerCart_' + user;
+        }
+
+        function saveCart() { localStorage.setItem(getCartKey(), JSON.stringify(cart)); }
 
         function loadCart() {
-            const savedCart = localStorage.getItem('customerCart');
+            const savedCart = localStorage.getItem(getCartKey());
             if (savedCart) cart = JSON.parse(savedCart);
         }
 
@@ -266,7 +273,7 @@
             const id = parseInt(button.getAttribute('data-id'));
             const name = button.getAttribute('data-name');
             const price = parseInt(button.getAttribute('data-price'));
-            const imageUrl = button.getAttribute('data-image') || '/images/default-promo.jpg';
+            const imageUrl = button.getAttribute('data-image') || '/uploads/default.jpg';
             
             const existingItem = cart.find(item => item.id === id);
             if (existingItem) {

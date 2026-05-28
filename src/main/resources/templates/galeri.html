@@ -53,11 +53,11 @@
                     <div class="card h-100 shadow-sm border-0 gallery-card">
                         <div class="position-relative overflow-hidden">
                             <!-- Image Sinkron dengan Menu (180px) -->
-                            <img th:src="${gallery.image != null ? gallery.image : '/images/default.jpg'}" 
+                            <img th:src="${gallery.image != null ? gallery.image : '/uploads/default.jpg'}" 
                                  class="card-img-top gallery-image-sync clickable-image"
                                  th:attr="onclick=|showGalleryDetail('${gallery.title}', '${gallery.image}', '${gallery.description}')|"
                                  alt="Gallery"
-                                 onerror="this.src='/images/default.jpg'">
+                                 onerror="this.src='/uploads/default.jpg'">
                         </div>
                         <div class="card-body p-3">
                             <h6 class="fw-bold mb-1 text-truncate" th:text="${gallery.title}"></h6>
@@ -186,7 +186,7 @@
         // Fungsi Modal Detail (Sesuai Menu)
         function showGalleryDetail(title, image, description) {
             document.getElementById('detailGalleryTitle').textContent = title;
-            document.getElementById('detailGalleryImage').src = image || '/images/default.jpg';
+            document.getElementById('detailGalleryImage').src = image || '/uploads/default.jpg';
             document.getElementById('detailGalleryDescription').textContent = description || 'Tidak ada deskripsi.';
             
             const detailModal = new bootstrap.Modal(document.getElementById('galleryDetailModal'));

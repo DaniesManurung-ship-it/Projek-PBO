@@ -13,7 +13,7 @@ import java.util.UUID;
 @Service
 public class ImageService {
 
-    @Value("${upload.path:upload-data/kldel/uploads/}")
+    @Value("${upload.path:upload-data/KL_del/uploads/}")
     private String uploadPath;
 
     public String saveImage(MultipartFile file) {

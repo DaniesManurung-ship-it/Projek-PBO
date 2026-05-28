@@ -189,15 +189,22 @@
             displayCart();
         });
 
+        function getCartKey() {
+            var meta = document.querySelector('meta[name="current-user"]');
+            var user = meta && meta.content ? meta.content : null;
+            if (!user || user === 'anonymousUser') return 'customerCart_guest';
+            return 'customerCart_' + user;
+        }
+
         function loadCart() {
-            const savedCart = localStorage.getItem('customerCart');
+            const savedCart = localStorage.getItem(getCartKey());
             if (savedCart) {
                 cart = JSON.parse(savedCart);
             }
         }
 
         function saveCart() {
-            localStorage.setItem('customerCart', JSON.stringify(cart));
+            localStorage.setItem(getCartKey(), JSON.stringify(cart));
         }
 
         function displayCart() {
@@ -230,11 +237,11 @@
             cart.forEach(item => {
                 const subtotal = item.price * item.quantity;
                 total += subtotal;
-                const imageUrl = item.imageUrl || '/images/default-menu.jpg';
+                const imageUrl = item.imageUrl || '/uploads/default.jpg';
 
                 html += `
                     <tr>
-                        <td class="ps-4"><img src="${escapeHtml(imageUrl)}" class="cart-img" onerror="this.src='/images/default-menu.jpg'"></td>
+                        <td class="ps-4"><img src="${escapeHtml(imageUrl)}" class="cart-img" onerror="this.src='/uploads/default.jpg'"></td>
                         <td><span class="fw-bold text-wood">${escapeHtml(item.name)}</span></td>
                         <td><small class="text-muted">Rp ${formatNumber(item.price)}</small></td>
                         <td class="text-center">
@@ -317,7 +324,7 @@
             })
             .then(res => {
                 if (res.ok) {
-                    localStorage.removeItem('customerCart'); // Bersihkan cart
+                    localStorage.removeItem(getCartKey()); // Bersihkan cart untuk user saat ini
                     window.location.href = '/pesanan/riwayat?success=ordered';
                 } else {
                     alert('Gagal mengirim pesanan. Silakan coba lagi.');

@@ -75,11 +75,11 @@
                     <div class="card h-100 shadow-sm border-0">
                         <div class="position-relative overflow-hidden">
                             <!-- Image dengan trigger modal -->
-                            <img th:src="${menu.image != null ? menu.image : '/images/default-menu.jpg'}"
+                            <img th:src="${menu.image != null ? menu.image : '/uploads/default.jpg'}"
                                  class="card-img-top menu-image-sync clickable-image"
                                  alt="Menu"
                                  th:attr="onclick=|showMenuDetail('${menu.name}', '${menu.image}', '${menu.description}')|"
-                                 onerror="this.src='/images/default-menu.jpg'" />
+                                 onerror="this.src='/uploads/default.jpg'" />
                             
                             <div class="badge-overlay">
                                 <span class="badge-custom best-seller" th:if="${menu.badge == 'best-seller'}">
@@ -205,17 +205,24 @@
         // Fungsi untuk menampilkan detail di modal
         function showMenuDetail(name, image, description) {
             document.getElementById('detailMenuName').textContent = name;
-            document.getElementById('detailMenuImage').src = image || '/images/default-menu.jpg';
+            document.getElementById('detailMenuImage').src = image || '/uploads/default.jpg';
             document.getElementById('detailMenuDescription').textContent = description || 'Tidak ada deskripsi.';
             
             const detailModal = new bootstrap.Modal(document.getElementById('menuDetailModal'));
             detailModal.show();
         }
 
-        function saveCart() { localStorage.setItem('customerCart', JSON.stringify(cart)); }
+        function getCartKey() {
+            var meta = document.querySelector('meta[name="current-user"]');
+            var user = meta && meta.content ? meta.content : null;
+            if (!user || user === 'anonymousUser') return 'customerCart_guest';
+            return 'customerCart_' + user;
+        }
+
+        function saveCart() { localStorage.setItem(getCartKey(), JSON.stringify(cart)); }
 
         function loadCart() {
-            const savedCart = localStorage.getItem('customerCart');
+            const savedCart = localStorage.getItem(getCartKey());
             if (savedCart) cart = JSON.parse(savedCart);
         }
 
@@ -255,7 +262,7 @@
             const id = parseInt(button.getAttribute('data-id'));
             const name = button.getAttribute('data-name');
             const price = parseInt(button.getAttribute('data-price'));
-            const imageUrl = button.getAttribute('data-image') || '/images/default-menu.jpg';
+            const imageUrl = button.getAttribute('data-image') || '/uploads/default.jpg';
             
             const existingItem = cart.find(item => item.id === id);
             if (existingItem) {
