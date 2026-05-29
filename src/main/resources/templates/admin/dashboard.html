@@ -86,9 +86,9 @@
                                     <span th:if="${testimoni.approved}" class="badge bg-success">Approved</span>
                                 </div>
                                 <div class="small text-warning mb-1">
-                                    <span th:each="i,stat : ${#numbers.sequence(1, 5)}">
-                                        <i th:if="${stat.index <= testimoni.rating}" class="fas fa-star"></i>
-                                        <i th:if="${stat.index > testimoni.rating}" class="far fa-star"></i>
+                                    <span th:each="i : ${#numbers.sequence(1, 5)}">
+                                        <i th:if="${i <= testimoni.rating}" class="fas fa-star"></i>
+                                        <i th:if="${i > testimoni.rating}" class="far fa-star"></i>
                                     </span>
                                 </div>
                                 <p class="mb-0 small text-muted" th:text="${testimoni.message}"></p>

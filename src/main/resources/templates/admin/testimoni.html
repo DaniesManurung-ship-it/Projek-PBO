@@ -67,9 +67,9 @@
                                         </td>
                                         <td>
                                             <div class="rating-star">
-                                                <span th:each="i,stat : ${#numbers.sequence(1, 5)}">
-                                                    <i th:if="${stat.index <= testimoni.rating}" class="fas fa-star text-warning"></i>
-                                                    <i th:if="${stat.index > testimoni.rating}" class="far fa-star text-muted"></i>
+                                                <span th:each="i : ${#numbers.sequence(1, 5)}">
+                                                    <i th:if="${i <= testimoni.rating}" class="fas fa-star text-warning"></i>
+                                                    <i th:if="${i > testimoni.rating}" class="far fa-star text-muted"></i>
                                                 </span>
                                             </div>
                                         </td>
